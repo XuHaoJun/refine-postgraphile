@@ -1,0 +1,6 @@
+[submodule "learn-projects/refine"]
+	path = learn-projects/refine
+	url = git@github.com:refinedev/refine.git
+[submodule "learn-projects/crystal"]
+	path = learn-projects/crystal
+	url = git@github.com:graphile/crystal.git

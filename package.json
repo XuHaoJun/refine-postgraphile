@@ -1,0 +1,45 @@
+{
+  "name": "refine-postgraphile",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "author": "refine",
+  "scripts": {
+    "build": "lerna run build --scope @refinedev/postgraphile",
+    "build:all": "lerna run build --scope @refinedev/postgraphile",
+    "biome": "biome",
+    "lint": "biome check .",
+    "lint:ci": "biome ci .",
+    "lint:error": "biome check . --diagnostic-level error",
+    "lint:fix": "biome check . --apply",
+    "test": "lerna run test --stream --scope @refinedev/postgraphile",
+    "test:all": "lerna run test --stream --scope @refinedev/postgraphile",
+    "test:coverage": "pnpm test -- -- --coverage",
+    "version-packages": "pnpm changeset version && pnpm i --ignore-scripts --lockfile-only --no-frozen-lockfile --reporter=ndjson --stream && git add pnpm-lock.yaml"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.15.3",
+    "@biomejs/biome": "^1.7.3",
+    "@changesets/changelog-github": "^0.4.6",
+    "@changesets/cli": "^2.24.3",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitest/ui": "^2.1.8",
+    "lerna": "^8.1.2",
+    "nx": "18.2.2",
+    "publint": "^0.2.7",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "rimraf": "3.0.2",
+    "sort-package-json": "^2.7.0",
+    "syncpack": "^12.3.2",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.8"
+  },
+  "packageManager": "pnpm@9.4.0+sha256.b6fd0bfda555e7e584ad7e56b30c68b01d5a04f9ee93989f4b93ca8473c49c74",
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=9"
+  },
+  "nx": {}
+}
