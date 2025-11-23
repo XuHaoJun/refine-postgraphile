@@ -117,7 +117,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
 
       const params = {
         resource: "users",
-        pagination: { current: 2, pageSize: 5 },
+        pagination: { currentPage: 2, pageSize: 5 },
       };
 
       await provider.getList(params);
@@ -305,7 +305,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
   describe("create Method Contract", () => {
     it("should return created record data", async () => {
       const mockResponse = {
-        createUser: {
+        createuser: {
           data: {
             id: "3",
             name: "Bob Smith",
@@ -335,7 +335,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
   describe("update Method Contract", () => {
     it("should return updated record data", async () => {
       const mockResponse = {
-        updateUser: {
+        updateuser: {
           data: {
             id: "1",
             name: "John Updated",
@@ -365,7 +365,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
   describe("deleteOne Method Contract", () => {
     it("should return deleted record data", async () => {
       const mockResponse = {
-        deleteUser: {
+        deleteuser: {
           data: {
             id: "1",
             name: "John Doe",

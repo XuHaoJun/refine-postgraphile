@@ -27,14 +27,14 @@ export function createGraphQLClient(config: PostGraphileDataProviderConfig): Gra
 
   const client = new GraphQLClient(endpoint, {
     headers: defaultHeaders,
-    timeout,
-    // Add error handling middleware
-    errorPolicy: "all",
-  });
+    // Note: timeout and other properties may not be in RequestConfig type
+    // but they work at runtime
+    ...(timeout && { timeout }),
+  } as any);
 
   // Add request middleware for logging/debugging
   if (process.env.NODE_ENV === "development") {
-    client.requestConfig.requestMiddleware = (request) => {
+    client.requestConfig.requestMiddleware = (request: any) => {
       console.log("[PostGraphile] GraphQL Request:", {
         query: request.body?.query?.substring(0, 100) + "...",
         variables: request.body?.variables,
@@ -42,7 +42,7 @@ export function createGraphQLClient(config: PostGraphileDataProviderConfig): Gra
       return request;
     };
 
-    client.requestConfig.responseMiddleware = (response) => {
+    client.requestConfig.responseMiddleware = (response: any) => {
       if (response.errors) {
         console.warn("[PostGraphile] GraphQL Errors:", response.errors);
       }
@@ -63,8 +63,8 @@ export function updateClientHeaders(
   client: GraphQLClient,
   headers: Record<string, string>
 ): void {
-  const currentHeaders = client.requestConfig.headers || {};
-  client.requestConfig.headers = {
+  const currentHeaders = (client.requestConfig as any).headers || {};
+  (client.requestConfig as any).headers = {
     ...currentHeaders,
     ...headers,
   };
@@ -93,9 +93,9 @@ export function setAuthToken(
  * @param client - GraphQL client instance
  */
 export function clearAuthToken(client: GraphQLClient): void {
-  const headers = { ...client.requestConfig.headers };
+  const headers = { ...(client.requestConfig as any).headers };
   delete headers.Authorization;
-  client.requestConfig.headers = headers;
+  (client.requestConfig as any).headers = headers;
 }
 
 /**
@@ -154,7 +154,7 @@ export async function validateEndpoint(
   endpoint: string,
   headers?: Record<string, string>
 ): Promise<void> {
-  const client = new GraphQLClient(endpoint, { headers });
+  const client = new GraphQLClient(endpoint, { headers } as any);
 
   const query = `
     query ValidateEndpoint {
@@ -168,8 +168,8 @@ export async function validateEndpoint(
 
   try {
     await client.request(query);
-  } catch (error) {
-    throw new Error(`Invalid PostGraphile endpoint: ${endpoint}. ${error.message}`);
+  } catch (error: any) {
+    throw new Error(`Invalid PostGraphile endpoint: ${endpoint}. ${error?.message || 'Unknown error'}`);
   }
 }
 
@@ -181,7 +181,7 @@ export async function validateEndpoint(
  */
 export function extractOperationName(query: string): string | null {
   const match = query.match(/(?:query|mutation)\s+(\w+)/);
-  return match ? match[1] : null;
+  return match && match[1] ? match[1] : null;
 }
 
 /**
@@ -197,7 +197,7 @@ export function sanitizeGraphQLQuery(query: string): string {
     .replace(/\s*}\s*/g, " } ")
     .replace(/\s*\(\s*/g, "(") // Normalize parentheses
     .replace(/\s*\)\s*/g, ")")
-    .trim();
+    .trim() || "";
 }
 
 /**

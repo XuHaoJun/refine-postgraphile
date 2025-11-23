@@ -42,6 +42,22 @@ export interface PostGraphileDataProviderConfig {
    * @default false
    */
   schemaIntrospection?: boolean;
+
+  /**
+   * Request timeout in milliseconds
+   * @default 30000
+   */
+  timeout?: number;
+
+  /**
+   * Retry configuration
+   */
+  retry?: {
+    /** Maximum number of retries */
+    attempts?: number;
+    /** Delay between retries in milliseconds */
+    delay?: number;
+  };
 }
 
 /**
@@ -71,39 +87,16 @@ export interface FilterOptions {
   allowedFieldTypes?: string[];
 }
 
+import type { MetaQuery } from "@refinedev/core";
+
 /**
- * GraphQL operation metadata for Refine
+ * GraphQL operation metadata for Refine (extends core MetaQuery)
  */
-export interface GraphQLOperationMeta {
-  /**
-   * GraphQL query string
-   */
-  gqlQuery?: string;
-
-  /**
-   * GraphQL mutation string
-   */
-  gqlMutation?: string;
-
-  /**
-   * GraphQL variables
-   */
-  gqlVariables?: BaseRecord;
-
+export interface GraphQLOperationMeta extends MetaQuery {
   /**
    * Operation name
    */
   operation?: string;
-
-  /**
-   * Additional variables
-   */
-  variables?: BaseRecord;
-
-  /**
-   * Fields to select
-   */
-  fields?: string[];
 }
 
 /**

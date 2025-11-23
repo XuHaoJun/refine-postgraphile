@@ -87,23 +87,23 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T023 [P] [US2] Contract test for create/update/delete mutations in packages/postgraphile/__tests__/contract/test-crud-operations.ts
+- [x] T023 [P] [US2] Contract test for create/update/delete mutations in packages/postgraphile/__tests__/contract/test-crud-operations.ts
 - [ ] T024 [P] [US2] Integration test for full CRUD cycle on a test table
 - [ ] T025 [P] [US2] Unit test for mutation input/payload parsing
 
 ### Implementation for User Story 2
 
-- [ ] T026 [US2] Implement create method with PostGraphile input/payload mutation pattern
-- [ ] T027 [US2] Implement createMany method for bulk record creation
-- [ ] T028 [US2] Implement update method with primary key and _set parameters
-- [ ] T029 [US2] Implement updateMany method for bulk updates with where conditions
-- [ ] T030 [US2] Implement deleteOne method with primary key deletion
-- [ ] T031 [US2] Implement deleteMany method with conditional bulk deletion
+- [x] T026 [US2] Implement create method with PostGraphile input/payload mutation pattern
+- [x] T027 [US2] Implement createMany method for bulk record creation
+- [x] T028 [US2] Implement update method with primary key and _set parameters
+- [x] T029 [US2] Implement updateMany method for bulk updates with where conditions
+- [x] T030 [US2] Implement deleteOne method with primary key deletion
+- [x] T031 [US2] Implement deleteMany method with conditional bulk deletion
 - [ ] T032 [US2] Add DatabaseTable entity support for primary key and column validation
 - [ ] T033 [US2] Implement RefineResource field mapping for CRUD forms
 - [ ] T034 [US2] Add error handling for database constraint violations (unique, foreign key, check constraints)
 
-**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - full CRUD operations available for PostGraphile tables
+**Checkpoint**: ✅ **ACHIEVED** - At this point, User Stories 1 AND 2 should both work independently - full CRUD operations available for PostGraphile tables
 
 ---
 

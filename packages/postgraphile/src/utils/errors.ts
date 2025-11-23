@@ -12,13 +12,13 @@ export class PostGraphileError extends Error {
     message: string,
     code: string,
     details?: any,
-    originalError?: Error
+    originalError?: Error | unknown
   ) {
     super(message);
     this.name = "PostGraphileError";
     this.code = code;
     this.details = details;
-    this.originalError = originalError;
+    this.originalError = originalError as Error;
   }
 }
 
@@ -297,12 +297,8 @@ function extractColumnName(message: string): string | undefined {
  * @returns True if the error is retryable
  */
 export function isRetryableError(error: PostGraphileError): boolean {
-  const retryableCodes = [
-    ErrorCodes.GRAPHQL_NETWORK,
-    ErrorCodes.ENDPOINT_UNAVAILABLE,
-  ];
-
-  return retryableCodes.includes(error.code as ErrorCode);
+  return error.code === ErrorCodes.GRAPHQL_NETWORK ||
+         error.code === ErrorCodes.ENDPOINT_UNAVAILABLE;
 }
 
 /**
