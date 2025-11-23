@@ -20,6 +20,8 @@ const preset: GraphileConfig.Preset = {
   },
   schema: {
     pgJwtSecret: "example-secret-key-change-in-production",
+    connectionFilterAllowEmptyObjectInput: true,
+    connectionFilterAllowNullInput: true,
   },
 };
 
