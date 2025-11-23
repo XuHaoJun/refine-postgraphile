@@ -13,12 +13,12 @@ This guide will get you up and running with the PostGraphile data provider for R
 ## Step 1: Install Dependencies
 
 ```bash
-npm install @refinedev/postgraphile @refinedev/core graphql-request gql-query-builder
+npm install @xuhaojun/refine-postgraphile @refinedev/core graphql-request gql-query-builder
 ```
 
 Or with yarn:
 ```bash
-yarn add @refinedev/postgraphile @refinedev/core graphql-request gql-query-builder
+yarn add @xuhaojun/refine-postgraphile @refinedev/core graphql-request gql-query-builder
 ```
 
 ## Step 2: Configure PostGraphile Server
@@ -50,7 +50,7 @@ Create a new Refine app or add to an existing one:
 ```typescript
 // src/App.tsx
 import { Refine } from "@refinedev/core";
-import dataProvider from "@refinedev/postgraphile";
+import dataProvider from "@xuhaojun/refine-postgraphile";
 import { GraphQLClient } from "graphql-request";
 
 const API_URL = "https://your-postgraphile-api.com/graphql";
@@ -83,7 +83,7 @@ Configure your Refine resources to match your PostGraphile schema:
 ```typescript
 // src/App.tsx
 import { Refine } from "@refinedev/core";
-import dataProvider from "@refinedev/postgraphile";
+import dataProvider from "@xuhaojun/refine-postgraphile";
 import { GraphQLClient } from "graphql-request";
 
 const API_URL = "https://your-postgraphile-api.com/graphql";

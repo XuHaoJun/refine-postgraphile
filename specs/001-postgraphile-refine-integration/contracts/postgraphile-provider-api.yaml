@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Refine PostGraphile Data Provider API
-  description: API contract for the @refinedev/postgraphile data provider
+  description: API contract for the @xuhaojun/refine-postgraphile data provider
   version: 1.0.0
   contact:
     name: Refine Team

@@ -96,7 +96,7 @@ export interface PostGraphileLiveProviderConfig {
  * @example
  * ```typescript
  * import { Refine } from "@refinedev/core";
- * import { dataProvider, liveProvider } from "@refinedev/postgraphile";
+ * import { dataProvider, liveProvider } from "@xuhaojun/refine-postgraphile";
  * import { GraphQLClient } from "graphql-request";
  *
  * const client = new GraphQLClient("https://api.example.com/graphql");

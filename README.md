@@ -1,7 +1,7 @@
-# @refinedev/postgraphile
+# @xuhaojun/refine-postgraphile
 
-[![npm version](https://img.shields.io/npm/v/@refinedev/postgraphile.svg)](https://www.npmjs.com/package/@refinedev/postgraphile)
-[![npm downloads](https://img.shields.io/npm/dm/@refinedev/postgraphile.svg)](https://www.npmjs.com/package/@refinedev/postgraphile)
+[![npm version](https://img.shields.io/npm/v/@xuhaojun/refine-postgraphile.svg)](https://www.npmjs.com/package/@xuhaojun/refine-postgraphile)
+[![npm downloads](https://img.shields.io/npm/dm/@xuhaojun/refine-postgraphile.svg)](https://www.npmjs.com/package/@xuhaojun/refine-postgraphile)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A [Refine](https://refine.dev/) data provider for [PostGraphile](https://www.graphile.org/postgraphile/) that enables seamless integration with PostGraphile-generated GraphQL APIs.
@@ -19,13 +19,13 @@ A [Refine](https://refine.dev/) data provider for [PostGraphile](https://www.gra
 ## Installation
 
 ```bash
-npm install @refinedev/postgraphile @refinedev/core graphql-request gql-query-builder
+npm install @xuhaojun/refine-postgraphile @refinedev/core graphql-request gql-query-builder
 ```
 
 Or with yarn:
 
 ```bash
-yarn add @refinedev/postgraphile @refinedev/core graphql-request gql-query-builder
+yarn add @xuhaojun/refine-postgraphile @refinedev/core graphql-request gql-query-builder
 ```
 
 ## PostGraphile Setup
@@ -54,7 +54,7 @@ export default {
 
 ```typescript
 import { Refine } from "@refinedev/core";
-import { dataProvider, liveProvider } from "@refinedev/postgraphile";
+import { dataProvider, liveProvider } from "@xuhaojun/refine-postgraphile";
 import { GraphQLClient } from "graphql-request";
 
 const API_URL = "https://your-postgraphile-api.com/graphql";
@@ -242,7 +242,7 @@ import type {
   FilterInput,
   SortingInput,
   PaginationInput,
-} from "@refinedev/postgraphile";
+} from "@xuhaojun/refine-postgraphile";
 ```
 
 ## Security
@@ -261,7 +261,7 @@ The provider includes multiple security measures:
 The provider includes comprehensive error handling with user-friendly messages:
 
 ```typescript
-import { PostGraphileError, ErrorCodes } from "@refinedev/postgraphile";
+import { PostGraphileError, ErrorCodes } from "@xuhaojun/refine-postgraphile";
 
 try {
   // Your data operations
@@ -282,7 +282,7 @@ If you're migrating from `@refinedev/hasura`, the API is similar but with PostGr
 import dataProvider from "@refinedev/hasura";
 
 // PostGraphile (new)
-import { dataProvider } from "@refinedev/postgraphile";
+import { dataProvider } from "@xuhaojun/refine-postgraphile";
 ```
 
 Key differences:

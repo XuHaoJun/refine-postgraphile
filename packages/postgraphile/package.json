@@ -1,5 +1,5 @@
 {
-  "name": "@refinedev/postgraphile",
+  "name": "@xuhaojun/refine-postgraphile",
   "version": "1.0.0",
   "private": false,
   "description": "PostGraphile data provider for Refine framework with advanced filtering, real-time subscriptions, and full TypeScript support.",
@@ -16,8 +16,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/refinedev/refine.git",
-    "directory": "packages/postgraphile"
+    "url": "git@github.com:XuHaoJun/refine-postgraphile.git"
   },
   "homepage": "https://refine.dev/docs/data/packages/postgraphile",
   "license": "MIT",
