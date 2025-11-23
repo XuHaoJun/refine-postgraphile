@@ -1,6 +1,6 @@
 {
   "name": "@xuhaojun/refine-postgraphile",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "description": "PostGraphile data provider for Refine framework with advanced filtering, real-time subscriptions, and full TypeScript support.",
   "keywords": [

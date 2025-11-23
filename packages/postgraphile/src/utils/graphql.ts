@@ -4,12 +4,12 @@ import type { PostGraphileDataProviderConfig } from "@/interfaces";
 /**
  * Creates a configured GraphQL client for PostGraphile
  *
+ * @param endpoint - GraphQL endpoint URL
  * @param config - PostGraphile data provider configuration
  * @returns Configured GraphQL client instance
  */
-export function createGraphQLClient(config: PostGraphileDataProviderConfig): GraphQLClient {
+export function createGraphQLClient(endpoint: string, config: PostGraphileDataProviderConfig = {}): GraphQLClient {
   const {
-    endpoint,
     headers = {},
     timeout = 30000,
     retry,

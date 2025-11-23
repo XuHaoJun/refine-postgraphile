@@ -45,33 +45,13 @@ import { buildGraphQLQuery } from "../utils/graphql";
  */
 export function dataProvider(
   client: GraphQLClient,
-  config: PostGraphileDataProviderConfig = { endpoint: "" }
+  config: PostGraphileDataProviderConfig = {}
 ): PostGraphileDataProvider {
   const {
     namingConvention = "simplified",
     filterOptions,
     schemaIntrospection = false,
   } = config;
-
-  // Validate configuration
-  if (!config.endpoint) {
-    throw new Error("PostGraphile endpoint is required");
-  }
-
-  // Security validation for endpoint URL
-  if (typeof config.endpoint !== "string" || config.endpoint.length === 0) {
-    throw new Error("PostGraphile endpoint must be a non-empty string");
-  }
-
-  // Basic URL validation to prevent malicious endpoints
-  try {
-    const url = new URL(config.endpoint);
-    if (!["http:", "https:"].includes(url.protocol)) {
-      throw new Error("PostGraphile endpoint must use HTTP or HTTPS protocol");
-    }
-  } catch (error) {
-    throw new Error("PostGraphile endpoint must be a valid URL");
-  }
 
   // Validate timeout is reasonable (not too high to prevent DoS)
   if (config.timeout && (config.timeout < 1000 || config.timeout > 300000)) {
@@ -139,7 +119,11 @@ export function dataProvider(
       return deleteMany(client, params, config);
     },
 
-    getApiUrl: () => config.endpoint,
+    getApiUrl: () => {
+      throw new Error(
+        "getApiUrl method is not implemented on refine-postgraphile data provider.",
+      );
+    },
 
     custom: async <
       TData extends BaseRecord = BaseRecord,
@@ -184,7 +168,7 @@ async function getList<TData extends BaseRecord = BaseRecord>(
   const operationName = getListOperationName(resource, meta as any);
 
   // Build GraphQL query for Relay connection
-  const query = buildGetListQuery(operationName, meta);
+  const query = buildGetListQuery(operationName, meta, config);
 
   // Build variables for the query
   const variables = buildGetListVariables(
@@ -197,7 +181,7 @@ async function getList<TData extends BaseRecord = BaseRecord>(
   try {
     // Add performance hints to the query if cacheable (but not for custom queries or in test environments)
     let finalQuery = query;
-    if (performanceHints.cacheable && config?.endpoint && !meta?.gqlQuery && process.env.NODE_ENV !== 'test') {
+    if (performanceHints.cacheable && !meta?.gqlQuery && process.env.NODE_ENV !== 'test') {
       // Add cache control hints for cacheable queries (only for generated queries)
       finalQuery = query.replace(
         'query ',
@@ -206,7 +190,11 @@ async function getList<TData extends BaseRecord = BaseRecord>(
     }
 
     const response = await client.request(finalQuery, variables);
-    const result = parseGetListResponse<TData>(response, operationName);
+    const result = parseGetListResponse<TData>(
+      response,
+      operationName,
+      config
+    );
 
     // Add performance metadata to result if requested
     if ((meta as any)?.includePerformanceHints) {
@@ -262,7 +250,7 @@ async function getOne<TData extends BaseRecord = BaseRecord>(
 
   try {
     const response = await client.request(query, variables);
-    return parseGetOneResponse<TData>(response, operationName);
+    return parseGetOneResponse<TData>(response, operationName, config);
   } catch (error) {
     throw handleError(error);
   }
@@ -282,14 +270,19 @@ async function create<TData extends BaseRecord = BaseRecord, TVariables = {}>(
   const operationName = getSingleOperationName(resource, meta as any);
 
   // Build GraphQL mutation
-  const mutation = buildCreateMutation(operationName, variables as any, meta);
+  const mutation = buildCreateMutation(
+    operationName,
+    variables as any,
+    meta,
+    config
+  );
 
   // Build variables
   const mutationVariables = { input: { object: variables } };
 
   try {
     const response = await client.request(mutation, mutationVariables);
-    return parseCreateResponse<TData>(response, operationName);
+    return parseCreateResponse<TData>(response, operationName, config);
   } catch (error) {
     throw handleError(error);
   }
@@ -332,7 +325,12 @@ async function update<TData extends BaseRecord = BaseRecord, TVariables = {}>(
   const operationName = getSingleOperationName(resource, meta as any);
 
   // Build GraphQL mutation
-  const mutation = buildUpdateMutation(operationName, variables as any, meta);
+  const mutation = buildUpdateMutation(
+    operationName,
+    variables as any,
+    meta,
+    config
+  );
 
   // Build variables - exclude id from object since it's passed separately
   const { id: _, ...updateVariables } = variables as any;
@@ -340,7 +338,7 @@ async function update<TData extends BaseRecord = BaseRecord, TVariables = {}>(
 
   try {
     const response = await client.request(mutation, mutationVariables);
-    return parseUpdateResponse<TData>(response, operationName);
+    return parseUpdateResponse<TData>(response, operationName, config);
   } catch (error) {
     throw handleError(error);
   }
@@ -397,14 +395,14 @@ async function deleteOne<
   const operationName = getSingleOperationName(resource, meta as any);
 
   // Build GraphQL mutation
-  const mutation = buildDeleteMutation(operationName, meta);
+  const mutation = buildDeleteMutation(operationName, meta, config);
 
   // Build variables
   const variables = { input: { id } };
 
   try {
     const response = await client.request(mutation, variables);
-    return parseDeleteResponse<TData>(response, operationName);
+    return parseDeleteResponse<TData>(response, operationName, config);
   } catch (error) {
     throw handleError(error);
   }
@@ -540,7 +538,11 @@ function pluralize(word: string): string {
   return word + "s";
 }
 
-function buildGetListQuery(operationName: string, meta?: any): string {
+function buildGetListQuery(
+  operationName: string,
+  meta?: any,
+  config?: PostGraphileDataProviderConfig
+): string {
   // Use custom query from meta if provided
   if (meta?.gqlQuery) {
     // Handle DocumentNode - extract the query string
@@ -570,17 +572,33 @@ function buildGetListQuery(operationName: string, meta?: any): string {
   const capitalizedName =
     operationName.charAt(0).toUpperCase() + operationName.slice(1);
 
-  // Build the selection set
+  // Determine field name based on naming convention
+  const namingConvention = config?.namingConvention || "simplified";
+  const fieldName =
+    namingConvention === "simplified"
+      ? operationName.toLowerCase()
+      : `all${capitalizedName}`;
+
+  // Build the selection set - use edges/node for simplified, nodes for standard
+  const itemsSelection =
+    namingConvention === "simplified"
+      ? `edges {
+        node {
+          ${fields}
+        }
+      }`
+      : `nodes {
+        ${fields}
+      }`;
+
   const selection = `
-    all${capitalizedName}(
+    ${fieldName}(
       first: $first
       after: $after
       filter: $filter
       orderBy: $orderBy
     ) {
-      nodes {
-        ${fields}
-      }
+      ${itemsSelection}
       totalCount
       pageInfo {
         hasNextPage
@@ -639,7 +657,8 @@ function buildGetOneQuery(operationName: string, meta?: any): string {
 function buildCreateMutation(
   operationName: string,
   variables: BaseRecord,
-  meta?: any
+  meta?: any,
+  config?: PostGraphileDataProviderConfig
 ): string {
   // Use custom mutation from meta if provided
   if (meta?.gqlMutation) {
@@ -657,10 +676,14 @@ function buildCreateMutation(
   // Build field selection
   const fields = meta?.fields ? meta.fields.join("\n          ") : "id";
 
+  // Determine response property name based on naming convention
+  const namingConvention = config?.namingConvention || "simplified";
+  const responseProperty = namingConvention === "simplified" ? "post" : "data";
+
   // Build the selection set
   const selection = `
     create${operationName.toLowerCase()}(input: $input) {
-      data {
+      ${responseProperty} {
         ${fields}
       }
     }
@@ -677,7 +700,8 @@ function buildCreateMutation(
 function buildUpdateMutation(
   operationName: string,
   variables: BaseRecord,
-  meta?: any
+  meta?: any,
+  config?: PostGraphileDataProviderConfig
 ): string {
   // Use custom mutation from meta if provided
   if (meta?.gqlMutation) {
@@ -695,10 +719,24 @@ function buildUpdateMutation(
   // Build field selection
   const fields = meta?.fields ? meta.fields.join("\n          ") : "id";
 
+  // Determine mutation name and response property based on naming convention
+  const namingConvention = config?.namingConvention || "simplified";
+  const capitalizedName =
+    operationName.charAt(0).toUpperCase() + operationName.slice(1);
+  const mutationName =
+    namingConvention === "simplified"
+      ? `update${capitalizedName}ById`
+      : `update${operationName.toLowerCase()}`;
+  const inputTypeName =
+    namingConvention === "simplified"
+      ? `Update${capitalizedName}ByIdInput`
+      : `Update${operationName.toLowerCase()}Input`;
+  const responseProperty = namingConvention === "simplified" ? "post" : "data";
+
   // Build the selection set
   const selection = `
-    update${operationName.toLowerCase()}(input: $input) {
-      data {
+    ${mutationName}(input: $input) {
+      ${responseProperty} {
         ${fields}
       }
     }
@@ -706,13 +744,17 @@ function buildUpdateMutation(
 
   return buildGraphQLQuery(
     "mutation",
-    `Update${operationName}`,
-    [`$input: Update${operationName.toLowerCase()}Input!`],
+    `Update${capitalizedName}`,
+    [`$input: ${inputTypeName}!`],
     selection.trim()
   );
 }
 
-function buildDeleteMutation(operationName: string, meta?: any): string {
+function buildDeleteMutation(
+  operationName: string,
+  meta?: any,
+  config?: PostGraphileDataProviderConfig
+): string {
   // Use custom mutation from meta if provided
   if (meta?.gqlMutation) {
     // Handle DocumentNode - extract the query string
@@ -729,10 +771,24 @@ function buildDeleteMutation(operationName: string, meta?: any): string {
   // Build field selection
   const fields = meta?.fields ? meta.fields.join("\n          ") : "id";
 
+  // Determine mutation name and response property based on naming convention
+  const namingConvention = config?.namingConvention || "simplified";
+  const capitalizedName =
+    operationName.charAt(0).toUpperCase() + operationName.slice(1);
+  const mutationName =
+    namingConvention === "simplified"
+      ? `delete${capitalizedName}ById`
+      : `delete${operationName.toLowerCase()}`;
+  const inputTypeName =
+    namingConvention === "simplified"
+      ? `Delete${capitalizedName}ByIdInput`
+      : `Delete${operationName.toLowerCase()}Input`;
+  const responseProperty = namingConvention === "simplified" ? "post" : "data";
+
   // Build the selection set
   const selection = `
-    delete${operationName.toLowerCase()}(input: $input) {
-      data {
+    ${mutationName}(input: $input) {
+      ${responseProperty} {
         ${fields}
       }
     }
@@ -740,8 +796,8 @@ function buildDeleteMutation(operationName: string, meta?: any): string {
 
   return buildGraphQLQuery(
     "mutation",
-    `Delete${operationName}`,
-    [`$input: Delete${operationName.toLowerCase()}Input!`],
+    `Delete${capitalizedName}`,
+    [`$input: ${inputTypeName}!`],
     selection.trim()
   );
 }
@@ -838,7 +894,11 @@ function buildGetListVariables(
 
   // Handle filtering
   if (filters && filters.length > 0) {
-    variables.filter = generateFilters(filters, config?.filterOptions);
+    const filter = generateFilters(filters, config?.filterOptions);
+    // Only add filter if it's not empty (e.g., all filters were skipped due to empty values)
+    if (filter && Object.keys(filter).length > 0) {
+      variables.filter = filter;
+    }
   }
 
   return variables;
@@ -846,29 +906,50 @@ function buildGetListVariables(
 
 function parseGetListResponse<TData extends BaseRecord = BaseRecord>(
   response: any,
-  operationName: string
+  operationName: string,
+  config?: PostGraphileDataProviderConfig
 ): GetListResponse<TData> {
-  // Field name is all{ResourceName} (e.g., allUsers)
-  const fieldName = `all${
-    operationName.charAt(0).toUpperCase() + operationName.slice(1)
-  }`;
+  // Determine field name based on naming convention
+  const namingConvention = config?.namingConvention || "simplified";
+  const capitalizedName =
+    operationName.charAt(0).toUpperCase() + operationName.slice(1);
+  const fieldName =
+    namingConvention === "simplified"
+      ? operationName.toLowerCase()
+      : `all${capitalizedName}`;
+
   const connection = response[fieldName];
 
   if (!connection) {
     throw new Error(`Expected '${fieldName}' field in response`);
   }
 
+  // Handle both nodes (standard) and edges/node (simplified) formats
+  let data: TData[];
+  if (connection.nodes) {
+    // Standard format: direct nodes array
+    data = connection.nodes as TData[];
+  } else if (connection.edges) {
+    // Simplified format: edges array with node property
+    data = connection.edges.map((edge: any) => edge.node) as TData[];
+  } else {
+    // Fallback: empty array if neither format is found
+    data = [];
+  }
+
   return {
-    data: (connection.nodes || []) as TData[],
+    data,
     total: connection.totalCount || 0,
   };
 }
 
 function parseGetOneResponse<TData extends BaseRecord = BaseRecord>(
   response: any,
-  operationName: string
+  operationName: string,
+  config?: PostGraphileDataProviderConfig
 ): GetOneResponse<TData> {
-  // Field name is {resourceName}ById (e.g., userById)
+  // Field name is {resourceName}ById (e.g., userById or postById)
+  // This is the same for both naming conventions
   const fieldName = `${operationName}ById`;
   const data = response[fieldName];
 
@@ -881,47 +962,76 @@ function parseGetOneResponse<TData extends BaseRecord = BaseRecord>(
 
 function parseCreateResponse<TData extends BaseRecord = BaseRecord>(
   response: any,
-  operationName: string
+  operationName: string,
+  config?: PostGraphileDataProviderConfig
 ): CreateResponse<TData> {
   // Field name follows simplified naming convention (lowercase)
   const fieldName = `create${operationName.toLowerCase()}`;
   const result = response[fieldName];
 
-  if (!result?.data) {
-    throw new Error(`Expected '${fieldName}.data' field in response`);
+  if (!result) {
+    throw new Error(`Expected '${fieldName}' field in response`);
   }
 
-  return { data: result.data as TData };
+  // Handle both .data (standard) and .post (simplified) formats
+  const data = result.data || result.post;
+  if (!data) {
+    throw new Error(`Expected '${fieldName}.data' or '${fieldName}.post' field in response`);
+  }
+
+  return { data: data as TData };
 }
 
 function parseUpdateResponse<TData extends BaseRecord = BaseRecord>(
   response: any,
-  operationName: string
+  operationName: string,
+  config?: PostGraphileDataProviderConfig
 ): UpdateResponse<TData> {
-  // Field name follows simplified naming convention (lowercase)
-  const fieldName = `update${operationName.toLowerCase()}`;
+  // Determine field name based on naming convention
+  const namingConvention = config?.namingConvention || "simplified";
+  const fieldName =
+    namingConvention === "simplified"
+      ? `update${operationName.charAt(0).toUpperCase() + operationName.slice(1)}ById`
+      : `update${operationName.toLowerCase()}`;
   const result = response[fieldName];
 
-  if (!result?.data) {
-    throw new Error(`Expected '${fieldName}.data' field in response`);
+  if (!result) {
+    throw new Error(`Expected '${fieldName}' field in response`);
   }
 
-  return { data: result.data as TData };
+  // Handle both .data (standard) and .post (simplified) formats
+  const data = result.data || result.post;
+  if (!data) {
+    throw new Error(`Expected '${fieldName}.data' or '${fieldName}.post' field in response`);
+  }
+
+  return { data: data as TData };
 }
 
 function parseDeleteResponse<TData extends BaseRecord = BaseRecord>(
   response: any,
-  operationName: string
+  operationName: string,
+  config?: PostGraphileDataProviderConfig
 ): DeleteOneResponse<TData> {
-  // Field name follows simplified naming convention (lowercase)
-  const fieldName = `delete${operationName.toLowerCase()}`;
+  // Determine field name based on naming convention
+  const namingConvention = config?.namingConvention || "simplified";
+  const fieldName =
+    namingConvention === "simplified"
+      ? `delete${operationName.charAt(0).toUpperCase() + operationName.slice(1)}ById`
+      : `delete${operationName.toLowerCase()}`;
   const result = response[fieldName];
 
-  if (!result?.data) {
-    throw new Error(`Expected '${fieldName}.data' field in response`);
+  if (!result) {
+    throw new Error(`Expected '${fieldName}' field in response`);
   }
 
-  return { data: result.data as TData };
+  // Handle both .data (standard) and .post (simplified) formats
+  const data = result.data || result.post;
+  if (!data) {
+    throw new Error(`Expected '${fieldName}.data' or '${fieldName}.post' field in response`);
+  }
+
+  return { data: data as TData };
 }
 
 function parseUpdateManyResponse<TData extends BaseRecord = BaseRecord>(

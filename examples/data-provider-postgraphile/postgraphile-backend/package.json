@@ -1,0 +1,30 @@
+{
+  "name": "postgraphile-backend",
+  "version": "1.0.0",
+  "description": "PostGraphile backend server for Refine example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.ts",
+    "build": "tsc",
+    "prod": "node dist/index.js"
+  },
+  "dependencies": {
+    "@graphile/pg-aggregates": "^0.2.0-rc.1",
+    "@graphile/simplify-inflection": "^8.0.0-rc.1",
+    "@types/cors": "^2.8.19",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "postgraphile": "^5.0.0-rc.1",
+    "postgraphile-plugin-connection-filter": "3.0.0-rc.1"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.15.32",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
