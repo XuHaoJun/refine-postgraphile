@@ -45,33 +45,13 @@ import { buildGraphQLQuery } from "../utils/graphql";
  */
 export function dataProvider(
   client: GraphQLClient,
-  config: PostGraphileDataProviderConfig = { endpoint: "" }
+  config: PostGraphileDataProviderConfig = {}
 ): PostGraphileDataProvider {
   const {
     namingConvention = "simplified",
     filterOptions,
     schemaIntrospection = false,
   } = config;
-
-  // Validate configuration
-  if (!config.endpoint) {
-    throw new Error("PostGraphile endpoint is required");
-  }
-
-  // Security validation for endpoint URL
-  if (typeof config.endpoint !== "string" || config.endpoint.length === 0) {
-    throw new Error("PostGraphile endpoint must be a non-empty string");
-  }
-
-  // Basic URL validation to prevent malicious endpoints
-  try {
-    const url = new URL(config.endpoint);
-    if (!["http:", "https:"].includes(url.protocol)) {
-      throw new Error("PostGraphile endpoint must use HTTP or HTTPS protocol");
-    }
-  } catch (error) {
-    throw new Error("PostGraphile endpoint must be a valid URL");
-  }
 
   // Validate timeout is reasonable (not too high to prevent DoS)
   if (config.timeout && (config.timeout < 1000 || config.timeout > 300000)) {
@@ -139,7 +119,11 @@ export function dataProvider(
       return deleteMany(client, params, config);
     },
 
-    getApiUrl: () => config.endpoint,
+    getApiUrl: () => {
+      throw new Error(
+        "getApiUrl method is not implemented on refine-postgraphile data provider.",
+      );
+    },
 
     custom: async <
       TData extends BaseRecord = BaseRecord,
@@ -197,7 +181,7 @@ async function getList<TData extends BaseRecord = BaseRecord>(
   try {
     // Add performance hints to the query if cacheable (but not for custom queries or in test environments)
     let finalQuery = query;
-    if (performanceHints.cacheable && config?.endpoint && !meta?.gqlQuery && process.env.NODE_ENV !== 'test') {
+    if (performanceHints.cacheable && !meta?.gqlQuery && process.env.NODE_ENV !== 'test') {
       // Add cache control hints for cacheable queries (only for generated queries)
       finalQuery = query.replace(
         'query ',

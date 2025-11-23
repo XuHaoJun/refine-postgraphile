@@ -26,6 +26,9 @@ export type {
   GraphQLError,
   GraphQLLocation,
   GraphQLResponse,
+  GetFieldsFromList,
+  GetFields,
+  GetVariables,
 } from "./interfaces";
 
 export type {

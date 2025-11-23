@@ -17,9 +17,7 @@ type LiveSubscribeOptions = {
   params?: LiveCommonParams & LiveListParams & LiveOneParams & LiveManyParams;
   meta?: any;
 };
-import type { GraphQLClient } from "graphql-request";
-import { createClient, Client as GraphQLWSClient } from "graphql-ws";
-// Note: WebSocket is dynamically imported to avoid bundling issues in browser environments
+import { Client as GraphQLWSClient } from "graphql-ws";
 import {
   generateUseListSubscription,
   generateUseManySubscription,
@@ -30,52 +28,6 @@ import {
  * Configuration for the PostGraphile live provider
  */
 export interface PostGraphileLiveProviderConfig {
-  /**
-   * WebSocket URL for GraphQL subscriptions
-   * If not provided, will be derived from the GraphQL client's endpoint
-   */
-  wsUrl?: string;
-
-  /**
-   * Headers to include in WebSocket connection
-   */
-  headers?: Record<string, string>;
-
-  /**
-   * Connection timeout in milliseconds
-   * @default 30000
-   */
-  connectionTimeout?: number;
-
-  /**
-   * Reconnection settings
-   */
-  reconnection?: {
-    /**
-     * Whether to enable automatic reconnection
-     * @default true
-     */
-    enabled?: boolean;
-
-    /**
-     * Initial delay before reconnection attempt (ms)
-     * @default 1000
-     */
-    initialDelay?: number;
-
-    /**
-     * Maximum delay between reconnection attempts (ms)
-     * @default 30000
-     */
-    maxDelay?: number;
-
-    /**
-     * Backoff multiplier for reconnection delay
-     * @default 2
-     */
-    backoffMultiplier?: number;
-  };
-
   /**
    * Enable debug logging for subscriptions
    * @default false
@@ -89,7 +41,7 @@ export interface PostGraphileLiveProviderConfig {
  * This provider enables real-time data synchronization by establishing GraphQL
  * subscriptions over WebSocket connections to PostGraphile's subscription endpoint.
  *
- * @param client - GraphQL client instance for HTTP requests
+ * @param client - WebSocket client instance for GraphQL subscriptions
  * @param config - Configuration options for the live provider
  * @returns Live provider instance for Refine
  *
@@ -97,91 +49,29 @@ export interface PostGraphileLiveProviderConfig {
  * ```typescript
  * import { Refine } from "@refinedev/core";
  * import { dataProvider, liveProvider } from "@xuhaojun/refine-postgraphile";
- * import { GraphQLClient } from "graphql-request";
+ * import { createClient } from "graphql-ws";
  *
- * const client = new GraphQLClient("https://api.example.com/graphql");
- * const wsUrl = "wss://api.example.com/graphql";
+ * const wsClient = createClient({
+ *   url: "wss://api.example.com/graphql",
+ * });
  *
  * const App = () => (
  *   <Refine
- *     dataProvider={dataProvider(client)}
- *     liveProvider={liveProvider(client, { wsUrl })}
+ *     dataProvider={dataProvider(httpClient)}
+ *     liveProvider={liveProvider(wsClient)}
  *     // ... other props
  *   />
  * );
  * ```
  */
 export function liveProvider(
-  client: GraphQLClient,
+  client: GraphQLWSClient,
   config: PostGraphileLiveProviderConfig = {}
 ): LiveProvider {
-  const {
-    wsUrl,
-    headers = {},
-    connectionTimeout = 30000,
-    reconnection = {
-      enabled: true,
-      initialDelay: 1000,
-      maxDelay: 30000,
-      backoffMultiplier: 2,
-    },
-    debug = false,
-  } = config;
-
-  // Derive WebSocket URL from GraphQL endpoint if not provided
-  const derivedWsUrl = wsUrl || getWebSocketUrl(client);
+  const { debug = false } = config;
 
   // Active subscriptions map (subscriptionId -> cleanup function)
   const subscriptions = new Map<string, () => void>();
-
-  // WebSocket client instance
-  let wsClient: GraphQLWSClient | null = null;
-
-  /**
-   * Initialize WebSocket client if not already created
-   */
-  const getWSClient = async (): Promise<GraphQLWSClient> => {
-    if (!wsClient) {
-      // Dynamically import WebSocket to avoid bundling issues
-      const WebSocket = (await import("ws")).default;
-
-      wsClient = createClient({
-        url: derivedWsUrl,
-        webSocketImpl: WebSocket,
-        connectionParams: {
-          headers,
-        },
-        retryAttempts: reconnection.enabled ? Infinity : 0,
-        retryWait: async (retries) => {
-          const delay = Math.min(
-            reconnection.initialDelay! * Math.pow(reconnection.backoffMultiplier!, retries),
-            reconnection.maxDelay!
-          );
-          if (debug) {
-            console.debug(`[PostGraphile Live] Reconnecting in ${delay}ms (attempt ${retries + 1})`);
-          }
-          // Wait for the delay
-          await new Promise(resolve => setTimeout(resolve, delay));
-        },
-        on: {
-          connected: () => {
-            if (debug) {
-              console.debug("[PostGraphile Live] WebSocket connected");
-            }
-          },
-          closed: () => {
-            if (debug) {
-              console.debug("[PostGraphile Live] WebSocket closed");
-            }
-          },
-          error: (error) => {
-            console.error("[PostGraphile Live] WebSocket error:", error);
-          },
-        },
-      });
-    }
-    return wsClient;
-  };
 
   return {
     /**
@@ -242,8 +132,7 @@ export function liveProvider(
         }
 
         // Create subscription
-        const wsClient = await getWSClient();
-        const unsubscribe = wsClient.subscribe(
+        const unsubscribe = client.subscribe(
           {
             query: subscriptionQuery,
             variables: meta?.variables || {},
@@ -390,22 +279,3 @@ function transformSubscriptionData(
   }
 }
 
-/**
- * Derive WebSocket URL from GraphQL HTTP endpoint
- */
-function getWebSocketUrl(client: GraphQLClient): string {
-  // This is a simplified implementation. In a real scenario, you might need
-  // to inspect the client's configuration or provide the WebSocket URL explicitly.
-
-  // For now, we'll make a reasonable assumption:
-  // - HTTP endpoints become WS endpoints
-  // - HTTPS endpoints become WSS endpoints
-
-  // Note: This is a placeholder. In practice, you should configure the wsUrl explicitly
-  // since the client doesn't expose its endpoint URL directly.
-
-  throw new Error(
-    "WebSocket URL must be explicitly provided in liveProvider config. " +
-    "Cannot derive from GraphQL client."
-  );
-}

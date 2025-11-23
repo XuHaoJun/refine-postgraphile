@@ -17,11 +17,6 @@ export interface PostGraphileDataProvider extends DataProvider {
  */
 export interface PostGraphileDataProviderConfig {
   /**
-   * PostGraphile GraphQL API endpoint URL
-   */
-  endpoint: string;
-
-  /**
    * HTTP headers to include in requests
    */
   headers?: Record<string, string>;
@@ -215,3 +210,34 @@ export interface GraphQLResponse<T = any> {
   errors?: GraphQLError[];
   extensions?: Record<string, any>;
 }
+
+/**
+ * Extract the item type from a GraphQL list query result
+ * Handles both PostGraphile Relay connections and simplified arrays
+ */
+export type GetFieldsFromList<T extends Record<string, any>> = {
+  [K in keyof T]: // Handle Relay connections with edges
+  T[K] extends { edges: Array<{ node: infer U }> }
+    ? U
+    : // Handle Relay connections with nodes
+    T[K] extends { nodes: Array<infer U> }
+    ? U
+    : // Handle simplified arrays
+    T[K] extends Array<infer U>
+    ? U
+    : never;
+}[keyof T];
+
+/**
+ * Extract fields from a GraphQL query or mutation result
+ */
+export type GetFields<T extends Record<any, any>, K = keyof T> = {
+  [P in keyof NonNullable<T[K]>]: NonNullable<T[K]>[P];
+};
+
+/**
+ * Extract variables from mutation inputs
+ */
+export type GetVariables<T extends Record<any, any>> =
+  | GetFields<T, "input">
+  | GetFields<T, "object">;
