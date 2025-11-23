@@ -1,0 +1,348 @@
+openapi: 3.0.3
+info:
+  title: Refine PostGraphile Data Provider API
+  description: API contract for the @refinedev/postgraphile data provider
+  version: 1.0.0
+  contact:
+    name: Refine Team
+    url: https://refine.dev
+
+servers:
+  - url: https://api.example.com
+    description: Example PostGraphile API server
+
+paths:
+  /graphql:
+    post:
+      summary: Execute GraphQL operations
+      description: Main endpoint for all PostGraphile GraphQL operations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: GraphQL query string
+                variables:
+                  type: object
+                  description: GraphQL variables
+                operationName:
+                  type: string
+                  description: Named operation to execute
+      responses:
+        '200':
+          description: Successful GraphQL response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraphQLResponse'
+
+components:
+  schemas:
+    # Configuration Types
+    PostGraphileProviderOptions:
+      type: object
+      properties:
+        endpoint:
+          type: string
+          format: uri
+          description: PostGraphile GraphQL API endpoint URL
+          example: "https://api.example.com/graphql"
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: HTTP headers to include in requests
+          example:
+            Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        namingConvention:
+          type: string
+          enum: ["simplified", "default"]
+          default: "simplified"
+          description: Field naming convention used by PostGraphile
+        filterOptions:
+          $ref: '#/components/schemas/FilterOptions'
+      required:
+        - endpoint
+
+    FilterOptions:
+      type: object
+      properties:
+        allowNullInput:
+          type: boolean
+          default: false
+          description: Allow null literals in filter inputs
+        allowEmptyObjectInput:
+          type: boolean
+          default: false
+          description: Allow empty objects in filter inputs
+        allowedOperators:
+          type: array
+          items:
+            type: string
+          description: Restrict allowed filter operators
+        allowedFieldTypes:
+          type: array
+          items:
+            type: string
+          description: Restrict filtering to specific field types
+
+    # GraphQL Response Types
+    GraphQLResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          description: GraphQL operation result data
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/GraphQLError'
+        extensions:
+          type: object
+          description: GraphQL extensions (tracing, etc.)
+
+    GraphQLError:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Human-readable error message
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/GraphQLLocation'
+        path:
+          type: array
+          items:
+            type: string
+          description: Path to the error in the GraphQL response
+        extensions:
+          type: object
+          description: Error extensions with additional context
+
+    GraphQLLocation:
+      type: object
+      properties:
+        line:
+          type: integer
+          minimum: 1
+        column:
+          type: integer
+          minimum: 1
+
+    # Relay Connection Types (PostGraphile standard)
+    Connection:
+      type: object
+      properties:
+        edges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Edge'
+        nodes:
+          type: array
+          items:
+            type: object
+            description: Array of node objects
+        pageInfo:
+          $ref: '#/components/schemas/PageInfo'
+        totalCount:
+          type: integer
+          description: Total number of records available
+      required:
+        - edges
+        - nodes
+        - pageInfo
+
+    Edge:
+      type: object
+      properties:
+        cursor:
+          type: string
+          description: Relay cursor for pagination
+        node:
+          type: object
+          description: The actual record data
+      required:
+        - cursor
+        - node
+
+    PageInfo:
+      type: object
+      properties:
+        hasNextPage:
+          type: boolean
+          description: Whether there are more records after this page
+        hasPreviousPage:
+          type: boolean
+          description: Whether there are more records before this page
+        startCursor:
+          type: string
+          description: Cursor for the first record in this page
+        endCursor:
+          type: string
+          description: Cursor for the last record in this page
+      required:
+        - hasNextPage
+        - hasPreviousPage
+
+    # Filter Input Types (postgraphile-plugin-connection-filter)
+    FilterInput:
+      type: object
+      properties:
+        and:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterInput'
+          description: Logical AND combination of filters
+        or:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterInput'
+          description: Logical OR combination of filters
+        not:
+          $ref: '#/components/schemas/FilterInput'
+          description: Logical NOT of a filter
+      additionalProperties:
+        $ref: '#/components/schemas/FieldFilter'
+
+    FieldFilter:
+      type: object
+      properties:
+        equalTo:
+          description: Exact equality match
+        notEqualTo:
+          description: Exact inequality match
+        greaterThan:
+          description: Greater than comparison
+        lessThan:
+          description: Less than comparison
+        greaterThanOrEqualTo:
+          description: Greater than or equal comparison
+        lessThanOrEqualTo:
+          description: Less than or equal comparison
+        in:
+          type: array
+          description: Value must be in the provided array
+        notIn:
+          type: array
+          description: Value must not be in the provided array
+        isNull:
+          type: boolean
+          description: Check if field is null (true) or not null (false)
+        includes:
+          description: Array contains this value
+        containedBy:
+          type: array
+          description: Array is contained by this array
+        overlaps:
+          type: array
+          description: Arrays have overlapping elements
+        startsWith:
+          type: string
+          description: String starts with this value
+        endsWith:
+          type: string
+          description: String ends with this value
+        contains:
+          description: String/array contains this value
+        like:
+          type: string
+          description: SQL LIKE pattern match
+        notLike:
+          type: string
+          description: SQL NOT LIKE pattern match
+
+    # Mutation Input Types (PostGraphile standard)
+    CreateInput:
+      type: object
+      properties:
+        object:
+          type: object
+          description: The record data to create
+        clientMutationId:
+          type: string
+          description: Optional client tracking ID
+      required:
+        - object
+
+    UpdateInput:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Primary key of the record to update
+        object:
+          type: object
+          description: The updated record data
+        clientMutationId:
+          type: string
+          description: Optional client tracking ID
+      required:
+        - id
+        - object
+
+    DeleteInput:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Primary key of the record to delete
+        clientMutationId:
+          type: string
+          description: Optional client tracking ID
+      required:
+        - id
+
+    # Mutation Payload Types
+    CreatePayload:
+      type: object
+      properties:
+        data:
+          type: object
+          description: The created record
+        clientMutationId:
+          type: string
+          description: Echoed client tracking ID
+        query:
+          type: object
+          description: Root query field for chaining operations
+
+    UpdatePayload:
+      type: object
+      properties:
+        data:
+          type: object
+          description: The updated record
+        clientMutationId:
+          type: string
+          description: Echoed client tracking ID
+        query:
+          type: object
+          description: Root query field for chaining operations
+
+    DeletePayload:
+      type: object
+      properties:
+        data:
+          type: object
+          description: The deleted record
+        clientMutationId:
+          type: string
+          description: Echoed client tracking ID
+        query:
+          type: object
+          description: Root query field for chaining operations
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for PostGraphile authentication
+
+security:
+  - bearerAuth: []
