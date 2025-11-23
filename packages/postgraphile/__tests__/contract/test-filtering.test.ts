@@ -37,8 +37,8 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       const params = {
         resource: "users",
         filters: [
-          { field: "name", operator: "eq", value: "John" },
-          { field: "age", operator: "ne", value: 25 },
+          { field: "name", operator: "eq" as const, value: "John" },
+          { field: "age", operator: "ne" as const, value: 25 },
         ],
       };
 
@@ -74,8 +74,8 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       const params = {
         resource: "products",
         filters: [
-          { field: "price", operator: "gt", value: 50 },
-          { field: "price", operator: "lte", value: 200 },
+          { field: "price", operator: "gt" as const, value: 50 },
+          { field: "price", operator: "lte" as const, value: 200 },
         ],
       };
 
@@ -113,8 +113,8 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       const params = {
         resource: "posts",
         filters: [
-          { field: "category", operator: "in", value: ["tech", "news"] },
-          { field: "tags", operator: "contains", value: "javascript" },
+          { field: "category", operator: "in" as const, value: ["tech", "news"] },
+          { field: "tags", operator: "contains" as const, value: "javascript" },
         ],
       };
 
@@ -150,8 +150,8 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       const params = {
         resource: "users",
         filters: [
-          { field: "email", operator: "startswith", value: "john" },
-          { field: "name", operator: "endswith", value: "son" },
+          { field: "email", operator: "startswith" as const, value: "john" },
+          { field: "name", operator: "endswith" as const, value: "son" },
         ],
       };
 
@@ -187,8 +187,8 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       const params = {
         resource: "users",
         filters: [
-          { field: "deletedAt", operator: "null", value: true },
-          { field: "verified", operator: "nnull", value: true },
+          { field: "deletedAt", operator: "null" as const, value: true },
+          { field: "verified", operator: "nnull" as const, value: true },
         ],
       };
 
@@ -225,14 +225,14 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
         resource: "posts",
         filters: [
           {
-            operator: "and",
+            operator: "and" as const,
             value: [
-              { field: "status", operator: "eq", value: "published" },
+              { field: "status", operator: "eq" as const, value: "published" },
               {
-                operator: "or",
+                operator: "or" as const,
                 value: [
-                  { field: "category", operator: "eq", value: "tech" },
-                  { field: "category", operator: "eq", value: "news" },
+                  { field: "category", operator: "eq" as const, value: "tech" },
+                  { field: "category", operator: "eq" as const, value: "news" },
                 ],
               },
             ],
@@ -279,7 +279,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       const params = {
         resource: "posts",
         filters: [
-          { field: "author.name", operator: "contains", value: "John" },
+          { field: "author.name", operator: "contains" as const, value: "John" },
         ],
       };
 

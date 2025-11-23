@@ -149,7 +149,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
 
       const params = {
         resource: "users",
-        sorters: [{ field: "name", order: "asc" }],
+        sorters: [{ field: "name", order: "asc" as const }],
       };
 
       await provider.getList(params);
@@ -180,7 +180,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
 
       const params = {
         resource: "users",
-        filters: [{ field: "name", operator: "contains", value: "John" }],
+        filters: [{ field: "name", operator: "contains" as const, value: "John" }],
       };
 
       await provider.getList(params);
@@ -230,7 +230,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
       const params = {
         resource: "users",
         meta: {
-          gqlQuery: customQuery,
+          gqlQuery: customQuery as any,
         },
       };
 

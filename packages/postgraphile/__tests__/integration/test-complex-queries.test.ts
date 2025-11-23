@@ -55,16 +55,16 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
 
       const params = {
         resource: "posts",
-        pagination: { current: 1, pageSize: 10 },
+        pagination: { currentPage: 1, pageSize: 10 },
         sorters: [
-          { field: "views", order: "desc" },
-          { field: "createdAt", order: "desc" },
+          { field: "views", order: "desc" as const },
+          { field: "createdAt", order: "desc" as const },
         ],
         filters: [
-          { field: "status", operator: "eq", value: "published" },
-          { field: "views", operator: "gte", value: 1000 },
-          { field: "title", operator: "contains", value: "React" },
-          { field: "author.name", operator: "startswith", value: "J" },
+          { field: "status", operator: "eq" as const, value: "published" },
+          { field: "views", operator: "gte" as const, value: 1000 },
+          { field: "title", operator: "contains" as const, value: "React" },
+          { field: "author.name", operator: "startswith" as const, value: "J" },
         ],
       };
 
@@ -118,15 +118,15 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
         resource: "products",
         filters: [
           {
-            operator: "and",
+            operator: "and" as const,
             value: [
-              { field: "inStock", operator: "eq", value: true },
-              { field: "price", operator: "lt", value: 500 },
+              { field: "inStock", operator: "eq" as const, value: true },
+              { field: "price", operator: "lt" as const, value: 500 },
               {
-                operator: "or",
+                operator: "or" as const,
                 value: [
-                  { field: "category", operator: "eq", value: "electronics" },
-                  { field: "tags", operator: "contains", value: "premium" },
+                  { field: "category", operator: "eq" as const, value: "electronics" },
+                  { field: "tags", operator: "contains" as const, value: "premium" },
                 ],
               },
             ],
@@ -184,8 +184,8 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       const params = {
         resource: "users",
         filters: [
-          { field: "roles", operator: "contains", value: "admin" },
-          { field: "skills", operator: "in", value: ["javascript", "typescript"] },
+          { field: "roles", operator: "contains" as const, value: "admin" },
+          { field: "skills", operator: "in" as const, value: ["javascript", "typescript"] },
         ],
       };
 
@@ -230,13 +230,13 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
 
       const params = {
         resource: "orders",
-        sorters: [{ field: "orderDate", order: "desc" }],
+        sorters: [{ field: "orderDate", order: "desc" as const }],
         filters: [
-          { field: "orderDate", operator: "gte", value: "2024-01-01T00:00:00Z" },
-          { field: "orderDate", operator: "lte", value: "2024-01-31T23:59:59Z" },
-          { field: "status", operator: "in", value: ["completed", "processing"] },
-          { field: "totalAmount", operator: "gt", value: 100 },
-          { field: "customer.vipStatus", operator: "eq", value: true },
+          { field: "orderDate", operator: "gte" as const, value: "2024-01-01T00:00:00Z" },
+          { field: "orderDate", operator: "lte" as const, value: "2024-01-31T23:59:59Z" },
+          { field: "status", operator: "in" as const, value: ["completed", "processing"] },
+          { field: "totalAmount", operator: "gt" as const, value: 100 },
+          { field: "customer.vipStatus", operator: "eq" as const, value: true },
         ],
       };
 
@@ -282,11 +282,11 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
 
       const params = {
         resource: "articles",
-        pagination: { current: 2, pageSize: 10 },
-        sorters: [{ field: "publishedAt", order: "desc" }],
+        pagination: { currentPage: 2, pageSize: 10 },
+        sorters: [{ field: "publishedAt", order: "desc" as const }],
         filters: [
-          { field: "published", operator: "eq", value: true },
-          { field: "category", operator: "ne", value: "draft" },
+          { field: "published", operator: "eq" as const, value: true },
+          { field: "category", operator: "ne" as const, value: "draft" },
         ],
       };
 
@@ -327,8 +327,8 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       const params = {
         resource: "events",
         filters: [
-          { field: "startDate", operator: "lt", value: "2024-01-01T00:00:00Z" },
-          { field: "status", operator: "eq", value: "cancelled" },
+          { field: "startDate", operator: "lt" as const, value: "2024-01-01T00:00:00Z" },
+          { field: "status", operator: "eq" as const, value: "cancelled" },
         ],
       };
 
@@ -360,7 +360,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       // Test page 1 (no cursor)
       const params1 = {
         resource: "posts",
-        pagination: { current: 1, pageSize: 10 },
+        pagination: { currentPage: 1, pageSize: 10 },
       };
 
       await provider.getList(params1);
@@ -373,11 +373,11 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       );
 
       // Verify no 'after' parameter for first page
-      const callArgs1 = mockClient.request.mock.calls[0][1];
+      const callArgs1 = (mockClient.request as any).mock.calls[0][1];
       expect(callArgs1.after).toBeUndefined();
 
       // Reset mock for second call
-      mockClient.request.mockClear();
+      (mockClient.request as any).mockClear();
 
       // Test page 3 (should have cursor)
       const params3 = {
@@ -396,7 +396,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       );
 
       // Verify cursor is base64 encoded offset
-      const callArgs = mockClient.request.mock.calls[0][1];
+      const callArgs = (mockClient.request as any).mock.calls[0][1];
       const decodedCursor = Buffer.from(callArgs.after, 'base64').toString();
       expect(decodedCursor).toBe('offset:20'); // (page 3 - 1) * 10 = 20
     });
@@ -428,11 +428,11 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       const params = {
         resource: "products",
         filters: [
-          { field: "tags", operator: "containedBy", value: ["electronics", "smart", "premium"] },
-          { field: "tags", operator: "overlaps", value: ["smart", "wifi"] },
-          { field: "metadata", operator: "contains", value: { category: "premium" } },
-          { field: "settings", operator: "hasKey", value: "theme" },
-          { field: "metadata", operator: "containedBy", value: { category: "premium", features: ["wifi", "bluetooth", "5g"] } },
+          { field: "tags", operator: "containedBy" as any, value: ["electronics", "smart", "premium"] },
+          { field: "tags", operator: "overlaps" as any, value: ["smart", "wifi"] },
+          { field: "metadata", operator: "contains" as const, value: { category: "premium" } },
+          { field: "settings", operator: "hasKey" as any, value: "theme" },
+          { field: "metadata", operator: "containedBy" as any, value: { category: "premium", features: ["wifi", "bluetooth", "5g"] } },
         ],
       };
 

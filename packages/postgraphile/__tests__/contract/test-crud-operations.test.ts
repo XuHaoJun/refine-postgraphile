@@ -148,7 +148,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
         ],
       };
 
-      const result = await provider.createMany(params);
+      const result = await provider.createMany!(params);
 
       expect(result).toHaveProperty("data");
       expect(Array.isArray(result.data)).toBe(true);
@@ -163,7 +163,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
         variables: [],
       };
 
-      const result = await provider.createMany(params);
+      const result = await provider.createMany!(params);
 
       expect(result).toHaveProperty("data");
       expect(Array.isArray(result.data)).toBe(true);
@@ -285,7 +285,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
         },
       };
 
-      const result = await provider.updateMany(params);
+      const result = await provider.updateMany!(params);
 
       expect(result).toHaveProperty("data");
       expect(Array.isArray(result.data)).toBe(true);
@@ -306,7 +306,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
         ],
       };
 
-      await expect(provider.updateMany(params)).rejects.toThrow(
+      await expect(provider.updateMany!(params)).rejects.toThrow(
         "Bulk update operations with filters require custom PostGraphile schema extensions"
       );
     });
@@ -409,7 +409,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
         ids: ["1", "2"],
       };
 
-      const result = await provider.deleteMany(params);
+      const result = await provider.deleteMany!(params);
 
       expect(result).toHaveProperty("data");
       expect(Array.isArray(result.data)).toBe(true);
@@ -427,7 +427,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
         ],
       };
 
-      await expect(provider.deleteMany(params)).rejects.toThrow(
+      await expect(provider.deleteMany!(params)).rejects.toThrow(
         "Bulk delete operations with filters require custom PostGraphile schema extensions"
       );
     });

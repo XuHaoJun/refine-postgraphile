@@ -1,11 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { generateFilters, analyzeQueryPerformance } from "../../src/utils/generateFilters.ts";
 import type { FilterOptions } from "../../src/interfaces.ts";
+import type { CrudFilter } from "@refinedev/core";
 
 describe("generateFilters Utility - Unit Tests", () => {
   describe("Operator Mapping", () => {
     it("should map equality operators correctly", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "name", operator: "eq", value: "John" },
         { field: "age", operator: "ne", value: 25 },
       ];
@@ -19,7 +20,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should map comparison operators correctly", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "price", operator: "gt", value: 100 },
         { field: "price", operator: "lt", value: 500 },
         { field: "price", operator: "gte", value: 0 },
@@ -39,7 +40,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should map inclusion operators correctly", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "category", operator: "in", value: ["electronics", "books"] },
         { field: "status", operator: "nin", value: ["draft", "archived"] },
       ];
@@ -53,7 +54,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should map string pattern operators correctly", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "title", operator: "contains", value: "React" },
         { field: "title", operator: "ncontains", value: "Draft" },
         { field: "name", operator: "startswith", value: "Mr" },
@@ -81,7 +82,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should map null checking operators correctly", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "deletedAt", operator: "null", value: true },
         { field: "verified", operator: "null", value: false },
         { field: "approved", operator: "nnull", value: true },
@@ -99,7 +100,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should handle containss and ncontainss operators", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "tags", operator: "containss", value: "urgent" },
         { field: "tags", operator: "ncontainss", value: "draft" },
       ];
@@ -115,8 +116,8 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should default to equalTo for unknown operators", () => {
-      const filters = [
-        { field: "status", operator: "unknown", value: "active" },
+      const filters: CrudFilter[] = [
+        { field: "status", operator: "unknown" as any, value: "active" },
       ];
 
       const result = generateFilters(filters);
@@ -129,7 +130,7 @@ describe("generateFilters Utility - Unit Tests", () => {
 
   describe("Logical Operators", () => {
     it("should handle AND combinations", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         {
           operator: "and",
           value: [
@@ -150,7 +151,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should handle OR combinations", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         {
           operator: "or",
           value: [
@@ -171,7 +172,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should handle nested logical operators", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         {
           operator: "and",
           value: [
@@ -205,7 +206,7 @@ describe("generateFilters Utility - Unit Tests", () => {
 
   describe("Field Merging", () => {
     it("should merge multiple filters on the same field", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "price", operator: "gt", value: 100 },
         { field: "price", operator: "lt", value: 500 },
         { field: "price", operator: "ne", value: 250 },
@@ -223,7 +224,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should handle complex field merging with different operator types", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "name", operator: "contains", value: "John" },
         { field: "name", operator: "startswith", value: "J" },
         { field: "name", operator: "endswith", value: "n" },
@@ -259,9 +260,9 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should skip filters without field and operator", () => {
-      const filters = [
-        { value: "invalid" },
-        { operator: "invalid" },
+      const filters: CrudFilter[] = [
+        { value: "invalid" } as any,
+        { operator: "invalid" as any },
         { field: "valid", operator: "eq", value: "test" },
       ];
 
@@ -273,7 +274,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should handle null and undefined values", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "name", operator: "eq", value: null },
         { field: "description", operator: "eq", value: undefined },
       ];
@@ -287,11 +288,11 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should handle array values correctly", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "tags", operator: "in", value: ["react", "vue", "angular"] },
         { field: "categories", operator: "contains", value: ["tech", "web"] },
-        { field: "userTags", operator: "containedBy", value: ["premium", "vip"] },
-        { field: "sharedTags", operator: "overlaps", value: ["featured", "trending"] },
+        { field: "userTags", operator: "containedBy" as any, value: ["premium", "vip"] },
+        { field: "sharedTags", operator: "overlaps" as any, value: ["featured", "trending"] },
       ];
 
       const result = generateFilters(filters);
@@ -305,10 +306,10 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should handle PostgreSQL JSONB operators", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "metadata", operator: "contains", value: { category: "electronics" } },
-        { field: "settings", operator: "hasKey", value: "theme" },
-        { field: "config", operator: "containedBy", value: { enabled: true, features: ["basic"] } },
+        { field: "settings", operator: "hasKey" as any, value: "theme" },
+        { field: "config", operator: "containedBy" as any, value: { enabled: true, features: ["basic"] } },
       ];
 
       const result = generateFilters(filters);
@@ -323,7 +324,7 @@ describe("generateFilters Utility - Unit Tests", () => {
 
   describe("Security Validation", () => {
     it("should restrict operators based on allowedOperators", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "name", operator: "contains", value: "test" },
         { field: "status", operator: "in", value: ["active"] },
       ];
@@ -338,7 +339,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should allow operators that are in allowedOperators list", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "name", operator: "eq", value: "test" },
         { field: "status", operator: "ne", value: "inactive" },
       ];
@@ -356,7 +357,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should reject null inputs when not allowed", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "name", operator: "eq", value: null },
       ];
 
@@ -370,7 +371,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should allow null inputs when explicitly allowed", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "name", operator: "eq", value: null },
       ];
 
@@ -386,7 +387,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should reject empty objects when not allowed", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "metadata", operator: "contains", value: {} },
       ];
 
@@ -400,7 +401,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should reject field names with GraphQL introspection patterns", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "__typename", operator: "eq", value: "User" },
         { field: "_internal", operator: "eq", value: "secret" },
       ];
@@ -411,7 +412,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should reject field names with invalid characters", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: 'name<script>', operator: "eq", value: "test" },
       ];
 
@@ -422,7 +423,7 @@ describe("generateFilters Utility - Unit Tests", () => {
 
     it("should reject extremely long field names", () => {
       const longFieldName = "a".repeat(101);
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: longFieldName, operator: "eq", value: "test" },
       ];
 
@@ -433,7 +434,7 @@ describe("generateFilters Utility - Unit Tests", () => {
 
     it("should reject extremely large arrays", () => {
       const largeArray = new Array(1001).fill("item");
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "tags", operator: "in", value: largeArray },
       ];
 
@@ -444,7 +445,7 @@ describe("generateFilters Utility - Unit Tests", () => {
 
     it("should reject extremely long strings", () => {
       const longString = "a".repeat(10001);
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "description", operator: "contains", value: longString },
       ];
 
@@ -479,7 +480,7 @@ describe("generateFilters Utility - Unit Tests", () => {
           }
         }
       };
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "metadata", operator: "contains", value: deeplyNested },
       ];
 
@@ -491,7 +492,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should validate nested filters recursively", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         {
           operator: "and",
           value: [
@@ -508,7 +509,7 @@ describe("generateFilters Utility - Unit Tests", () => {
 
   describe("Performance Analysis", () => {
     it("should analyze simple query performance", () => {
-      const filters = [{ field: "name", operator: "eq", value: "test" }];
+      const filters: CrudFilter[] = [{ field: "name", operator: "eq", value: "test" }];
       const pagination = { pageSize: 10 };
       const sorters = [{ field: "name", order: "asc" }];
       const fields = ["id", "name"];
@@ -523,10 +524,10 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should detect high complexity queries", () => {
-      const filters = [
+      const filters: CrudFilter[] = [
         { field: "name", operator: "contains", value: "test" },
         { field: "description", operator: "contains", value: "complex" },
-        { field: "tags", operator: "overlaps", value: ["tag1", "tag2"] },
+        { field: "tags", operator: "overlaps" as any, value: ["tag1", "tag2"] },
         {
           operator: "and",
           value: [
@@ -551,7 +552,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should suggest optimizations for large page sizes", () => {
-      const filters = [];
+      const filters: CrudFilter[] = [];
       const pagination = { pageSize: 200 };
 
       const result = analyzeQueryPerformance(filters, pagination);
@@ -560,7 +561,7 @@ describe("generateFilters Utility - Unit Tests", () => {
     });
 
     it("should suggest optimizations for many selected fields", () => {
-      const filters = [{ field: "name", operator: "eq", value: "test" }];
+      const filters: CrudFilter[] = [{ field: "name", operator: "eq", value: "test" }];
       const fields = Array.from({ length: 25 }, (_, i) => `field${i}`);
 
       const result = analyzeQueryPerformance(filters, undefined, undefined, fields);
@@ -571,28 +572,28 @@ describe("generateFilters Utility - Unit Tests", () => {
     it("should estimate result sizes correctly", () => {
       // Small result
       const smallResult = analyzeQueryPerformance(
-        [{ field: "id", operator: "eq", value: "123" }],
+        [{ field: "id", operator: "eq", value: "123" }] as CrudFilter[],
         { pageSize: 10 }
       );
       expect(smallResult.estimatedSize).toBe('small');
 
       // Medium result
       const mediumResult = analyzeQueryPerformance(
-        [],
+        [] as CrudFilter[],
         { pageSize: 50 }
       );
       expect(mediumResult.estimatedSize).toBe('medium');
 
       // Large result
       const largeResult = analyzeQueryPerformance(
-        [],
+        [] as CrudFilter[],
         { pageSize: 100 }
       );
       expect(largeResult.estimatedSize).toBe('large');
     });
 
     it("should handle empty inputs", () => {
-      const result = analyzeQueryPerformance([]);
+      const result = analyzeQueryPerformance([] as CrudFilter[]);
 
       expect(result.complexity).toBe(0);
       expect(result.cacheable).toBe(true);

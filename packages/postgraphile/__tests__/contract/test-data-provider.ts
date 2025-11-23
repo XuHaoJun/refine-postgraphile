@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { GraphQLClient } from "graphql-request";
-import { dataProvider } from "@/dataProvider";
-import type { PostGraphileDataProvider } from "@/interfaces";
+import { gql } from "graphql-tag";
+import { dataProvider } from "../../src/dataProvider";
+import type { PostGraphileDataProvider } from "../../src/interfaces";
+import type { CrudSort, CrudFilter } from "@refinedev/core";
 
 // Mock GraphQLClient
 vi.mock("graphql-request");
@@ -149,7 +151,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
 
       const params = {
         resource: "users",
-        sorters: [{ field: "name", order: "asc" }],
+        sorters: [{ field: "name", order: "asc" } as CrudSort],
       };
 
       await provider.getList(params);
@@ -180,7 +182,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
 
       const params = {
         resource: "users",
-        filters: [{ field: "name", operator: "contains", value: "John" }],
+        filters: [{ field: "name", operator: "contains", value: "John" } as CrudFilter],
       };
 
       await provider.getList(params);
@@ -211,7 +213,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
 
       mockClient.request = vi.fn().mockResolvedValue(mockResponse);
 
-      const customQuery = `
+      const customQuery = gql`
         query GetUsers {
           allUsers {
             nodes {
