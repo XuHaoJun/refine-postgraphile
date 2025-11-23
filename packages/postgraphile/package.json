@@ -32,19 +32,22 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest run",
+    "test": "vitest run __tests__",
     "test:watch": "vitest",
     "publint": "publint --strict=true --level=suggestion"
   },
   "dependencies": {
     "camelcase": "^6.2.0",
     "gql-query-builder": "^3.5.5",
-    "graphql": "^15.6.1",
-    "graphql-request": "^5.2.0",
+    "graphql": "^16.8.1",
+    "graphql-request": "^6.1.0",
     "graphql-tag": "^2.12.6",
     "graphql-ws": "^5.9.1",
     "lodash": "^4.17.21",
-    "lodash-es": "^4.17.21"
+    "lodash-es": "^4.17.21",
+    "postgraphile": "^4.13.0",
+    "@graphile/simplify-inflection": "^8.0.0-beta.8",
+    "postgraphile-plugin-connection-filter": "^2.3.0"
   },
   "devDependencies": {
     "@esbuild-plugins/node-resolve": "^0.1.4",
@@ -54,7 +57,7 @@
     "@vitest/ui": "^2.1.8",
     "nock": "^13.4.0",
     "tslib": "^2.6.2",
-    "tsup": "^6.7.0",
+    "tsup": "^8.0.0",
     "typescript": "^5.8.3",
     "vitest": "^2.1.8"
   },
