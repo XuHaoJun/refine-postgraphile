@@ -2,14 +2,27 @@
   "name": "@refinedev/postgraphile",
   "version": "1.0.0",
   "private": false,
-  "description": "Postgraphile integration for Refine, leveraging Postgraphile's GraphQL APIs.",
+  "description": "PostGraphile data provider for Refine framework with advanced filtering, real-time subscriptions, and full TypeScript support.",
+  "keywords": [
+    "refine",
+    "postgraphile",
+    "graphql",
+    "data-provider",
+    "crud",
+    "react",
+    "typescript",
+    "admin-panel",
+    "headless-cms"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/refinedev/refine.git",
+    "url": "git+https://github.com/refinedev/refine.git",
     "directory": "packages/postgraphile"
   },
+  "homepage": "https://refine.dev/docs/data/packages/postgraphile",
   "license": "MIT",
   "author": "refine",
+  "type": "commonjs",
   "exports": {
     ".": {
       "import": {
@@ -17,12 +30,12 @@
         "default": "./dist/index.mjs"
       },
       "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
       }
     }
   },
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
   "module": "dist/index.mjs",
   "typings": "dist/index.d.ts",
   "files": [
@@ -34,9 +47,11 @@
     "dev": "tsup --watch",
     "test": "vitest run __tests__",
     "test:watch": "vitest",
+    "prepublishOnly": "npm run build && npm run test",
     "publint": "publint --strict=true --level=suggestion"
   },
   "dependencies": {
+    "@graphile/simplify-inflection": "^8.0.0-beta.8",
     "camelcase": "^6.2.0",
     "gql-query-builder": "^3.5.5",
     "graphql": "^16.8.1",
@@ -46,7 +61,6 @@
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
     "postgraphile": "^4.13.0",
-    "@graphile/simplify-inflection": "^8.0.0-beta.8",
     "postgraphile-plugin-connection-filter": "^2.3.0"
   },
   "devDependencies": {
@@ -54,6 +68,8 @@
     "@refinedev/core": "^5.0.5",
     "@types/lodash": "^4.14.171",
     "@types/node": "^20",
+    "@types/ws": "^8.18.1",
+    "@vitest/coverage-v8": "^4.0.13",
     "@vitest/ui": "^2.1.8",
     "nock": "^13.4.0",
     "tslib": "^2.6.2",

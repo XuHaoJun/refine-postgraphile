@@ -58,6 +58,26 @@ export function dataProvider(
     throw new Error("PostGraphile endpoint is required");
   }
 
+  // Security validation for endpoint URL
+  if (typeof config.endpoint !== "string" || config.endpoint.length === 0) {
+    throw new Error("PostGraphile endpoint must be a non-empty string");
+  }
+
+  // Basic URL validation to prevent malicious endpoints
+  try {
+    const url = new URL(config.endpoint);
+    if (!["http:", "https:"].includes(url.protocol)) {
+      throw new Error("PostGraphile endpoint must use HTTP or HTTPS protocol");
+    }
+  } catch (error) {
+    throw new Error("PostGraphile endpoint must be a valid URL");
+  }
+
+  // Validate timeout is reasonable (not too high to prevent DoS)
+  if (config.timeout && (config.timeout < 1000 || config.timeout > 300000)) {
+    throw new Error("Timeout must be between 1000ms and 300000ms (5 minutes)");
+  }
+
   return {
     // PostGraphile-specific properties
     namingConvention,

@@ -180,24 +180,83 @@ export async function validateEndpoint(
  * @returns Operation name or null if not found
  */
 export function extractOperationName(query: string): string | null {
-  const match = query.match(/(?:query|mutation)\s+(\w+)/);
+  const match = query.match(/(?:query|mutation|subscription)\s+(\w+)/);
   return match && match[1] ? match[1] : null;
 }
 
 /**
- * Sanitizes a GraphQL query by removing unnecessary whitespace
+ * Validates GraphQL operation name for security
+ *
+ * @param operationName - Operation name to validate
+ * @throws Error if operation name is invalid
+ */
+export function validateOperationName(operationName: string): void {
+  if (!operationName || typeof operationName !== "string") {
+    throw new Error("Operation name must be a non-empty string");
+  }
+
+  // Prevent operation names that could be used for injection
+  if (operationName.includes("__") || operationName.startsWith("_")) {
+    throw new Error(`Operation name '${operationName}' is not allowed (reserved GraphQL fields)`);
+  }
+
+  // Prevent suspicious characters
+  if (/[<>'"&\\]/.test(operationName)) {
+    throw new Error(`Operation name '${operationName}' contains invalid characters`);
+  }
+
+  // Limit operation name length
+  if (operationName.length > 50) {
+    throw new Error("Operation name is too long (maximum 50 characters)");
+  }
+
+  // Ensure valid GraphQL identifier pattern
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(operationName)) {
+    throw new Error(`Operation name '${operationName}' is not a valid GraphQL identifier`);
+  }
+}
+
+/**
+ * Sanitizes a GraphQL query by removing unnecessary whitespace and preventing injection
  *
  * @param query - GraphQL query string
  * @returns Sanitized query string
  */
 export function sanitizeGraphQLQuery(query: string): string {
-  return query
+  if (typeof query !== "string") {
+    throw new Error("GraphQL query must be a string");
+  }
+
+  // Prevent extremely long queries that could be used for DoS
+  if (query.length > 10000) {
+    throw new Error("GraphQL query is too long (maximum 10000 characters)");
+  }
+
+  let sanitized = query
     .replace(/\s+/g, " ") // Replace multiple whitespace with single space
     .replace(/\s*{\s*/g, " { ") // Normalize braces
     .replace(/\s*}\s*/g, " } ")
     .replace(/\s*\(\s*/g, "(") // Normalize parentheses
     .replace(/\s*\)\s*/g, ")")
-    .trim() || "";
+    .trim();
+
+  // Additional security checks
+  // Prevent suspicious patterns that could indicate injection attempts
+  const suspiciousPatterns = [
+    /\b__\w+\b/g, // Introspection fields like __schema, __type
+    /\\x[0-9a-f]{2}/gi, // Hex-encoded characters
+    /\\u[0-9a-f]{4}/gi, // Unicode escape sequences
+    /javascript:/gi, // JavaScript URLs (in case of misuse)
+    /data:/gi, // Data URLs
+  ];
+
+  for (const pattern of suspiciousPatterns) {
+    if (pattern.test(sanitized)) {
+      throw new Error("GraphQL query contains suspicious patterns that are not allowed");
+    }
+  }
+
+  return sanitized || "";
 }
 
 /**

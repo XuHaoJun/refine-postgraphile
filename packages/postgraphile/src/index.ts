@@ -1,8 +1,9 @@
 // Main data provider export
 export { dataProvider } from "./dataProvider";
 
-// Live provider export (to be implemented)
+// Live provider export
 export { liveProvider } from "./liveProvider";
+export type { PostGraphileLiveProviderConfig } from "./liveProvider";
 
 // Utility exports
 export * from "./utils";
