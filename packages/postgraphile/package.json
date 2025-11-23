@@ -51,7 +51,6 @@
     "publint": "publint --strict=true --level=suggestion"
   },
   "dependencies": {
-    "@graphile/simplify-inflection": "^8.0.0-beta.8",
     "camelcase": "^6.2.0",
     "gql-query-builder": "^3.5.5",
     "graphql": "^16.8.1",
@@ -59,9 +58,7 @@
     "graphql-tag": "^2.12.6",
     "graphql-ws": "^5.9.1",
     "lodash": "^4.17.21",
-    "lodash-es": "^4.17.21",
-    "postgraphile": "^4.13.0",
-    "postgraphile-plugin-connection-filter": "^2.3.0"
+    "lodash-es": "^4.17.21"
   },
   "devDependencies": {
     "@esbuild-plugins/node-resolve": "^0.1.4",
@@ -70,12 +67,12 @@
     "@types/node": "^20",
     "@types/ws": "^8.18.1",
     "@vitest/coverage-v8": "^4.0.13",
-    "@vitest/ui": "^2.1.8",
+    "@vitest/ui": "^4.0.13",
     "nock": "^13.4.0",
     "tslib": "^2.6.2",
     "tsup": "^8.0.0",
     "typescript": "^5.8.3",
-    "vitest": "^2.1.8"
+    "vitest": "^4.0.13"
   },
   "peerDependencies": {
     "@refinedev/core": "^5.0.0",

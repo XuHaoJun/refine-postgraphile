@@ -24,9 +24,9 @@
     "@changesets/cli": "^2.24.3",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
-    "@vitest/ui": "^2.1.8",
+    "@vitest/ui": "^4.0.13",
     "lerna": "^8.1.2",
-    "nx": "18.2.2",
+    "nx": "19.8.4",
     "publint": "^0.2.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -34,7 +34,7 @@
     "sort-package-json": "^2.7.0",
     "syncpack": "^12.3.2",
     "typescript": "^5.8.3",
-    "vitest": "^2.1.8"
+    "vitest": "^4.0.13"
   },
   "packageManager": "pnpm@9.4.0+sha256.b6fd0bfda555e7e584ad7e56b30c68b01d5a04f9ee93989f4b93ca8473c49c74",
   "engines": {
