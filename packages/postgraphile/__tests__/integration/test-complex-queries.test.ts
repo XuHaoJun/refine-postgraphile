@@ -20,7 +20,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
   describe("Complex Filtering and Sorting Scenarios", () => {
     it("should handle complex multi-field filtering with sorting", async () => {
       const mockResponse = {
-        allPosts: {
+        posts: {
           nodes: [
             {
               id: "1",
@@ -75,10 +75,10 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
 
       // Verify the GraphQL query was called with correct parameters
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allPosts"),
+        expect.stringContaining("posts"),
         expect.objectContaining({
           first: 10,
-          orderBy: ["views_DESC", "createdAt_DESC"],
+          orderBy: ["VIEWS_DESC", "CREATED_AT_DESC"],
           filter: {
             status: { equalTo: "published" },
             views: { greaterThanOrEqualTo: 1000 },
@@ -91,7 +91,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
 
     it("should handle logical operator combinations", async () => {
       const mockResponse = {
-        allProducts: {
+        products: {
           nodes: [
             {
               id: "1",
@@ -140,7 +140,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       expect(result.total).toBe(1);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allProducts"),
+        expect.stringContaining("products"),
         expect.objectContaining({
           filter: {
             and: [
@@ -160,7 +160,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
 
     it("should handle array field filtering", async () => {
       const mockResponse = {
-        allUsers: {
+        users: {
           nodes: [
             {
               id: "1",
@@ -194,7 +194,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       expect(result.data).toHaveLength(1);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allUsers"),
+        expect.stringContaining("users"),
         expect.objectContaining({
           filter: {
             roles: { contains: "admin" },
@@ -206,7 +206,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
 
     it("should handle date range filtering with complex conditions", async () => {
       const mockResponse = {
-        allOrders: {
+        orders: {
           nodes: [
             {
               id: "1",
@@ -245,9 +245,9 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       expect(result.data).toHaveLength(1);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allOrders"),
+        expect.stringContaining("orders"),
         expect.objectContaining({
-          orderBy: ["orderDate_DESC"],
+          orderBy: ["ORDER_DATE_DESC"],
           filter: {
             orderDate: {
               greaterThanOrEqualTo: "2024-01-01T00:00:00Z",
@@ -263,7 +263,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
 
     it("should handle pagination with complex filters", async () => {
       const mockResponse = {
-        allArticles: {
+        articles: {
           nodes: [
             { id: "11", title: "Article 11" },
             { id: "12", title: "Article 12" },
@@ -296,10 +296,10 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       expect(result.total).toBe(50);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allArticles"),
+        expect.stringContaining("articles"),
         expect.objectContaining({
           first: 10,
-          orderBy: ["publishedAt_DESC"],
+          orderBy: ["PUBLISHED_AT_DESC"],
           filter: {
             published: { equalTo: true },
             category: { notEqualTo: "draft" },
@@ -310,7 +310,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
 
     it("should handle empty results with complex filters", async () => {
       const mockResponse = {
-        allEvents: {
+        events: {
           nodes: [],
           totalCount: 0,
           pageInfo: {
@@ -340,7 +340,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
 
     it("should handle cursor-based pagination correctly", async () => {
       const mockResponse = {
-        allPosts: {
+        posts: {
           nodes: [
             { id: "11", title: "Post 11" },
             { id: "12", title: "Post 12" },
@@ -366,7 +366,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       await provider.getList(params1);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allPosts"),
+        expect.stringContaining("posts"),
         expect.objectContaining({
           first: 10,
         })
@@ -388,7 +388,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       await provider.getList(params3);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allPosts"),
+        expect.stringContaining("posts"),
         expect.objectContaining({
           first: 10,
           after: expect.any(String), // Should have base64 encoded cursor
@@ -403,7 +403,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
 
     it("should handle PostgreSQL advanced types filtering", async () => {
       const mockResponse = {
-        allProducts: {
+        products: {
           nodes: [
             {
               id: "1",
@@ -441,7 +441,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       expect(result.data).toHaveLength(1);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allProducts"),
+        expect.stringContaining("products"),
         expect.objectContaining({
           filter: {
             tags: {

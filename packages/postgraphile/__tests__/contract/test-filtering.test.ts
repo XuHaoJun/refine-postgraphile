@@ -20,7 +20,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
   describe("Advanced Filter Operators", () => {
     it("should support equality operators", async () => {
       const mockResponse = {
-        allUsers: {
+        users: {
           nodes: [{ id: "1", name: "John" }],
           totalCount: 1,
           pageInfo: {
@@ -45,7 +45,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       await provider.getList(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allUsers"),
+        expect.stringContaining("users"),
         expect.objectContaining({
           filter: {
             name: { equalTo: "John" },
@@ -57,7 +57,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
 
     it("should support comparison operators", async () => {
       const mockResponse = {
-        allProducts: {
+        products: {
           nodes: [{ id: "1", price: 100 }],
           totalCount: 1,
           pageInfo: {
@@ -82,7 +82,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       await provider.getList(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allProducts"),
+        expect.stringContaining("products"),
         expect.objectContaining({
           filter: {
             price: {
@@ -96,7 +96,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
 
     it("should support array and inclusion operators", async () => {
       const mockResponse = {
-        allPosts: {
+        posts: {
           nodes: [{ id: "1", tags: ["javascript", "react"] }],
           totalCount: 1,
           pageInfo: {
@@ -121,7 +121,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       await provider.getList(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allPosts"),
+        expect.stringContaining("posts"),
         expect.objectContaining({
           filter: {
             category: { in: ["tech", "news"] },
@@ -133,7 +133,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
 
     it("should support string pattern matching", async () => {
       const mockResponse = {
-        allUsers: {
+        users: {
           nodes: [{ id: "1", email: "john@example.com" }],
           totalCount: 1,
           pageInfo: {
@@ -158,7 +158,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       await provider.getList(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allUsers"),
+        expect.stringContaining("users"),
         expect.objectContaining({
           filter: {
             email: { startsWith: "john" },
@@ -170,7 +170,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
 
     it("should support null checking", async () => {
       const mockResponse = {
-        allUsers: {
+        users: {
           nodes: [{ id: "1", deletedAt: null }],
           totalCount: 1,
           pageInfo: {
@@ -195,7 +195,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       await provider.getList(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allUsers"),
+        expect.stringContaining("users"),
         expect.objectContaining({
           filter: {
             deletedAt: { isNull: true },
@@ -207,7 +207,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
 
     it("should support complex logical combinations", async () => {
       const mockResponse = {
-        allPosts: {
+        posts: {
           nodes: [{ id: "1", title: "Post 1" }],
           totalCount: 1,
           pageInfo: {
@@ -243,7 +243,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       await provider.getList(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allPosts"),
+        expect.stringContaining("posts"),
         expect.objectContaining({
           filter: {
             and: [
@@ -262,7 +262,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
 
     it("should support nested field filtering", async () => {
       const mockResponse = {
-        allPosts: {
+        posts: {
           nodes: [{ id: "1", author: { name: "John" } }],
           totalCount: 1,
           pageInfo: {
@@ -286,7 +286,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       await provider.getList(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allPosts"),
+        expect.stringContaining("posts"),
         expect.objectContaining({
           filter: {
             "author.name": { contains: "John" },
@@ -297,7 +297,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
 
     it("should handle empty filter arrays", async () => {
       const mockResponse = {
-        allUsers: {
+        users: {
           nodes: [{ id: "1", name: "John" }],
           totalCount: 1,
           pageInfo: {
@@ -319,7 +319,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       await provider.getList(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allUsers"),
+        expect.stringContaining("users"),
         expect.not.objectContaining({
           filter: expect.anything(),
         })
@@ -328,7 +328,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
 
     it("should handle undefined filters", async () => {
       const mockResponse = {
-        allUsers: {
+        users: {
           nodes: [{ id: "1", name: "John" }],
           totalCount: 1,
           pageInfo: {
@@ -349,7 +349,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
       await provider.getList(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allUsers"),
+        expect.stringContaining("users"),
         expect.not.objectContaining({
           filter: expect.anything(),
         })

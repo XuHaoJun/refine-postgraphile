@@ -67,7 +67,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
     it("should return data and total count", async () => {
       // Mock the GraphQL response
       const mockResponse = {
-        allUsers: {
+        users: {
           nodes: [
             { id: "1", name: "John Doe", email: "john@example.com" },
             { id: "2", name: "Jane Doe", email: "jane@example.com" },
@@ -101,7 +101,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
 
     it("should handle pagination parameters", async () => {
       const mockResponse = {
-        allUsers: {
+        users: {
           nodes: [{ id: "1", name: "John Doe" }],
           totalCount: 1,
           pageInfo: {
@@ -123,7 +123,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
       await provider.getList(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allUsers"),
+        expect.stringContaining("users"),
         expect.objectContaining({
           first: 5,
           // Note: Cursor calculation would be implemented
@@ -133,7 +133,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
 
     it("should handle sorting parameters", async () => {
       const mockResponse = {
-        allUsers: {
+        users: {
           nodes: [{ id: "1", name: "John Doe" }],
           totalCount: 1,
           pageInfo: {
@@ -155,16 +155,16 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
       await provider.getList(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allUsers"),
+        expect.stringContaining("users"),
         expect.objectContaining({
-          orderBy: ["name_ASC"],
+          orderBy: ["NAME_ASC"],
         })
       );
     });
 
     it("should handle filter parameters", async () => {
       const mockResponse = {
-        allUsers: {
+        users: {
           nodes: [{ id: "1", name: "John Doe" }],
           totalCount: 1,
           pageInfo: {
@@ -186,7 +186,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
       await provider.getList(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("allUsers"),
+        expect.stringContaining("users"),
         expect.objectContaining({
           filter: {
             name: { contains: "John" },
@@ -197,7 +197,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
 
     it("should handle meta parameters for custom GraphQL", async () => {
       const mockResponse = {
-        allUsers: {
+        users: {
           nodes: [{ id: "1", customField: "value" }],
           totalCount: 1,
           pageInfo: {
@@ -335,7 +335,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
   describe("update Method Contract", () => {
     it("should return updated record data", async () => {
       const mockResponse = {
-        updateuser: {
+        updateUserById: {
           data: {
             id: "1",
             name: "John Updated",
@@ -365,7 +365,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
   describe("deleteOne Method Contract", () => {
     it("should return deleted record data", async () => {
       const mockResponse = {
-        deleteuser: {
+        deleteUserById: {
           data: {
             id: "1",
             name: "John Doe",

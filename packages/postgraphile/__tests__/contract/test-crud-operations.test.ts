@@ -174,7 +174,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
   describe("update Method Contract", () => {
     it("should update a single record and return updated data", async () => {
       const mockResponse = {
-        updateuser: {
+        updateUserById: {
           data: {
             id: "1",
             name: "John Updated",
@@ -203,7 +203,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
 
     it("should handle update with primary key in variables", async () => {
       const mockResponse = {
-        updateuser: {
+        updateUserById: {
           data: {
             id: "1",
             name: "John Doe",
@@ -226,7 +226,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
       await provider.update(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("mutation Updateuser"),
+        expect.stringContaining("mutation UpdateUser"),
         expect.objectContaining({
           input: {
             id: "1",
@@ -259,7 +259,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
       // Mock multiple calls to update
       mockClient.request = vi.fn()
         .mockResolvedValueOnce({
-          updateuser: {
+          updateUserById: {
             data: {
               id: "1",
               name: "John Doe",
@@ -268,7 +268,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
           },
         })
         .mockResolvedValueOnce({
-          updateuser: {
+          updateUserById: {
             data: {
               id: "2",
               name: "Jane Doe",
@@ -315,7 +315,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
   describe("deleteOne Method Contract", () => {
     it("should delete a single record and return deleted data", async () => {
       const mockResponse = {
-        deleteuser: {
+        deleteUserById: {
           data: {
             id: "1",
             name: "John Doe",
@@ -340,7 +340,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
 
     it("should handle delete with custom meta", async () => {
       const mockResponse = {
-        deletepost: {
+        deletePostById: {
           data: {
             id: "5",
             title: "Post to Delete",
@@ -361,7 +361,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
       await provider.deleteOne(params);
 
       expect(mockClient.request).toHaveBeenCalledWith(
-        expect.stringContaining("mutation Deletepost"),
+        expect.stringContaining("mutation DeletePost"),
         expect.objectContaining({
           input: {
             id: "5",
@@ -388,7 +388,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
       // Mock multiple calls to deleteOne
       mockClient.request = vi.fn()
         .mockResolvedValueOnce({
-          deleteuser: {
+          deleteUserById: {
             data: {
               id: "1",
               name: "John Doe",
@@ -396,7 +396,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
           },
         })
         .mockResolvedValueOnce({
-          deleteuser: {
+          deleteUserById: {
             data: {
               id: "2",
               name: "Jane Doe",

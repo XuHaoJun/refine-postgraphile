@@ -19,7 +19,7 @@ describe("generateSorting", () => {
 
     const result = generateSorting(sorters);
 
-    expect(result).toEqual(["name_ASC"]);
+    expect(result).toEqual(["NAME_ASC"]);
   });
 
   it("should generate sorting strings for multiple sorters", () => {
@@ -31,7 +31,7 @@ describe("generateSorting", () => {
 
     const result = generateSorting(sorters);
 
-    expect(result).toEqual(["name_ASC", "createdAt_DESC", "email_ASC"]);
+    expect(result).toEqual(["NAME_ASC", "CREATED_AT_DESC", "EMAIL_ASC"]);
   });
 
   it("should handle desc order correctly", () => {
@@ -39,6 +39,6 @@ describe("generateSorting", () => {
 
     const result = generateSorting(sorters);
 
-    expect(result).toEqual(["priority_DESC"]);
+    expect(result).toEqual(["PRIORITY_DESC"]);
   });
 });
