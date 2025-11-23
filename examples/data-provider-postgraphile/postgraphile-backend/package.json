@@ -11,11 +11,11 @@
   },
   "dependencies": {
     "@graphile/pg-aggregates": "^0.2.0-rc.1",
-    "@graphile/simplify-inflection": "^8.0.0-beta.6",
+    "@graphile/simplify-inflection": "^8.0.0-rc.1",
     "@types/cors": "^2.8.19",
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "postgraphile": "^5.0.0-beta.38",
+    "postgraphile": "^5.0.0-rc.1",
     "postgraphile-plugin-connection-filter": "3.0.0-rc.1"
   },
   "devDependencies": {

@@ -5,9 +5,9 @@ export const POSTS_QUERY = gql`
         $first: Int
         $after: Cursor
         $filter: PostFilter
-        $orderBy: [PostsOrderBy!]
+        $orderBy: [PostOrderBy!]
     ) {
-        allPosts(
+        posts(
             first: $first
             after: $after
             filter: $filter
@@ -20,7 +20,7 @@ export const POSTS_QUERY = gql`
                     content
                     categoryId
                     createdAt
-                    categoryByCategoryId {
+                    category {
                         id
                         title
                     }
@@ -38,12 +38,12 @@ export const POSTS_QUERY = gql`
 `;
 
 export const POST_QUERY = gql`
-    query GetPost($id: UUID!) {
+    query GetPost($id: ID!) {
         postById(id: $id) {
             id
             title
             content
-            categoryByCategoryId {
+            category {
                 id
                 title
             }
@@ -60,7 +60,7 @@ export const POST_CREATE_MUTATION = gql`
                 content
                 categoryId
                 createdAt
-                categoryByCategoryId {
+                category {
                     id
                     title
                 }
@@ -78,7 +78,7 @@ export const POST_UPDATE_MUTATION = gql`
                 content
                 categoryId
                 createdAt
-                categoryByCategoryId {
+                category {
                     id
                     title
                 }
@@ -93,7 +93,7 @@ export const POST_DELETE_MUTATION = gql`
             post {
                 id
                 content
-                categoryByCategoryId {
+                category {
                     id
                 }
             }
@@ -103,7 +103,7 @@ export const POST_DELETE_MUTATION = gql`
 
 export const POST_CATEGORIES_SELECT_QUERY = gql`
     query GetPostCategoriesSelect($filter: CategoryFilter) {
-        allCategories(filter: $filter) {
+        categories(filter: $filter) {
             edges {
                 node {
                     id

@@ -6,9 +6,9 @@ export const CATEGORIES_QUERY: DocumentNode = gql`
         $first: Int
         $after: Cursor
         $filter: CategoryFilter
-        $orderBy: [CategoriesOrderBy!]
+        $orderBy: [CategoryOrderBy!]
     ) {
-        allCategories(
+        categories(
             first: $first
             after: $after
             filter: $filter
