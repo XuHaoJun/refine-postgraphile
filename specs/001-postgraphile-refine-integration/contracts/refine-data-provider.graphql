@@ -1,0 +1,185 @@
+# Refine Data Provider Interface Contract
+# Defines the contract between Refine components and the PostGraphile data provider
+
+"""
+Refine Data Provider interface for PostGraphile integration.
+This contract ensures compatibility with Refine's data access patterns.
+"""
+interface RefineDataProvider {
+  # Retrieve a single record by ID
+  getOne(params: GetOneParams): GetOneResult
+
+  # Retrieve multiple records by IDs
+  getMany(params: GetManyParams): GetManyResult
+
+  # Retrieve a paginated list of records
+  getList(params: GetListParams): GetListResult
+
+  # Create a new record
+  create(params: CreateParams): CreateResult
+
+  # Create multiple records
+  createMany(params: CreateManyParams): CreateManyResult
+
+  # Update a single record
+  update(params: UpdateParams): UpdateResult
+
+  # Update multiple records
+  updateMany(params: UpdateManyParams): UpdateManyResult
+
+  # Delete a single record
+  deleteOne(params: DeleteOneParams): DeleteOneResult
+
+  # Delete multiple records
+  deleteMany(params: DeleteManyParams): DeleteManyResult
+
+  # Execute custom GraphQL operations
+  custom(params: CustomParams): CustomResult
+}
+
+# Input/Output type definitions
+
+input GetOneParams {
+  resource: String!
+  id: ID!
+  meta: MetaData
+}
+
+type GetOneResult {
+  data: BaseRecord!
+}
+
+input GetManyParams {
+  resource: String!
+  ids: [ID!]!
+  meta: MetaData
+}
+
+type GetManyResult {
+  data: [BaseRecord!]!
+}
+
+input GetListParams {
+  resource: String!
+  pagination: PaginationData
+  sorters: [SorterData!]
+  filters: [FilterData!]
+  meta: MetaData
+}
+
+type GetListResult {
+  data: [BaseRecord!]!
+  total: Int!
+}
+
+input CreateParams {
+  resource: String!
+  variables: BaseRecord!
+  meta: MetaData
+}
+
+type CreateResult {
+  data: BaseRecord!
+}
+
+input CreateManyParams {
+  resource: String!
+  variables: [BaseRecord!]!
+  meta: MetaData
+}
+
+type CreateManyResult {
+  data: [BaseRecord!]!
+}
+
+input UpdateParams {
+  resource: String!
+  id: ID!
+  variables: BaseRecord!
+  meta: MetaData
+}
+
+type UpdateResult {
+  data: BaseRecord!
+}
+
+input UpdateManyParams {
+  resource: String!
+  ids: [ID!]!
+  variables: BaseRecord!
+  meta: MetaData
+}
+
+type UpdateManyResult {
+  data: [BaseRecord!]!
+}
+
+input DeleteOneParams {
+  resource: String!
+  id: ID!
+  meta: MetaData
+}
+
+type DeleteOneResult {
+  data: BaseRecord!
+}
+
+input DeleteManyParams {
+  resource: String!
+  ids: [ID!]!
+  meta: MetaData
+}
+
+type DeleteManyResult {
+  data: [BaseRecord!]!
+}
+
+input CustomParams {
+  url: String
+  method: String
+  headers: BaseRecord
+  meta: MetaData
+}
+
+type CustomResult {
+  data: BaseRecord
+}
+
+# Supporting types
+
+scalar BaseRecord
+
+type MetaData {
+  fields: [String!]
+  gqlQuery: String
+  gqlMutation: String
+  gqlVariables: BaseRecord
+  operation: String
+  variables: BaseRecord
+}
+
+type PaginationData {
+  current: Int
+  pageSize: Int
+  mode: String
+}
+
+type SorterData {
+  field: String!
+  order: String!
+}
+
+type FilterData {
+  field: String!
+  operator: String!
+  value: String
+}
+
+# PostGraphile-specific extensions
+
+type PostGraphileDataProvider implements RefineDataProvider {
+  # PostGraphile-specific features
+  namingConvention: String!
+  supportsConnectionFiltering: Boolean!
+  supportsSimplifyInflection: Boolean!
+}

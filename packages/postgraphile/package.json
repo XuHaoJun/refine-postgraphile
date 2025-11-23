@@ -2,14 +2,27 @@
   "name": "@refinedev/postgraphile",
   "version": "1.0.0",
   "private": false,
-  "description": "Postgraphile integration for Refine, leveraging Postgraphile's GraphQL APIs.",
+  "description": "PostGraphile data provider for Refine framework with advanced filtering, real-time subscriptions, and full TypeScript support.",
+  "keywords": [
+    "refine",
+    "postgraphile",
+    "graphql",
+    "data-provider",
+    "crud",
+    "react",
+    "typescript",
+    "admin-panel",
+    "headless-cms"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/refinedev/refine.git",
+    "url": "git+https://github.com/refinedev/refine.git",
     "directory": "packages/postgraphile"
   },
+  "homepage": "https://refine.dev/docs/data/packages/postgraphile",
   "license": "MIT",
   "author": "refine",
+  "type": "commonjs",
   "exports": {
     ".": {
       "import": {
@@ -17,12 +30,12 @@
         "default": "./dist/index.mjs"
       },
       "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
       }
     }
   },
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
   "module": "dist/index.mjs",
   "typings": "dist/index.d.ts",
   "files": [
@@ -32,15 +45,16 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest run",
+    "test": "vitest run __tests__",
     "test:watch": "vitest",
+    "prepublishOnly": "npm run build && npm run test",
     "publint": "publint --strict=true --level=suggestion"
   },
   "dependencies": {
     "camelcase": "^6.2.0",
     "gql-query-builder": "^3.5.5",
-    "graphql": "^15.6.1",
-    "graphql-request": "^5.2.0",
+    "graphql": "^16.8.1",
+    "graphql-request": "^6.1.0",
     "graphql-tag": "^2.12.6",
     "graphql-ws": "^5.9.1",
     "lodash": "^4.17.21",
@@ -51,12 +65,14 @@
     "@refinedev/core": "^5.0.5",
     "@types/lodash": "^4.14.171",
     "@types/node": "^20",
-    "@vitest/ui": "^2.1.8",
+    "@types/ws": "^8.18.1",
+    "@vitest/coverage-v8": "^4.0.13",
+    "@vitest/ui": "^4.0.13",
     "nock": "^13.4.0",
     "tslib": "^2.6.2",
-    "tsup": "^6.7.0",
+    "tsup": "^8.0.0",
     "typescript": "^5.8.3",
-    "vitest": "^2.1.8"
+    "vitest": "^4.0.13"
   },
   "peerDependencies": {
     "@refinedev/core": "^5.0.0",
