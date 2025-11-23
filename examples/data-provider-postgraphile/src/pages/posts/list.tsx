@@ -92,7 +92,7 @@ export const PostList = () => {
               />
             </FilterDropdown>
           )}
-          render={(_, record) => record?.categoryByCategoryId?.title}
+          render={(_, record) => record?.category?.title}
           defaultFilteredValue={getDefaultFilter("category_id", filters, "in")}
         />
         <Table.Column

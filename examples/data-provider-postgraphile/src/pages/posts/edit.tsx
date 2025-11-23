@@ -17,9 +17,7 @@ import type {
   GetPostCategoriesSelectQuery,
   UpdatePostMutationVariables,
 } from "graphql/types";
-import type {
-  GetVariables,
-} from "@xuhaojun/refine-postgraphile";
+import type { GetVariables } from "@xuhaojun/refine-postgraphile";
 import { POST_CATEGORIES_SELECT_QUERY, POST_UPDATE_MUTATION } from "./queries";
 import { Category, Post } from "graphql/schema.types";
 
@@ -29,22 +27,16 @@ export const PostEdit = () => {
     saveButtonProps,
     query: queryResult,
     formLoading,
-  } = useForm<
-    Post,
-    HttpError,
-    GetVariables<UpdatePostMutationVariables>
-  >({
+  } = useForm<Post, HttpError, GetVariables<UpdatePostMutationVariables>>({
     meta: {
       gqlMutation: POST_UPDATE_MUTATION,
     },
   });
 
   const postData = queryResult?.data?.data;
-  const { selectProps: categorySelectProps } = useSelect<
-    Category
-  >({
+  const { selectProps: categorySelectProps } = useSelect<Category>({
     resource: "categories",
-    defaultValue: postData?.categoryByCategoryId?.id,
+    defaultValue: postData?.category?.id,
 
     meta: {
       gqlQuery: POST_CATEGORIES_SELECT_QUERY,
