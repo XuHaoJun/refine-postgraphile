@@ -117,7 +117,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
 
       const params = {
         resource: "users",
-        pagination: { current: 2, pageSize: 5 },
+        pagination: { currentPage: 2, pageSize: 5 },
       };
 
       await provider.getList(params);
@@ -126,7 +126,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
         expect.stringContaining("allUsers"),
         expect.objectContaining({
           first: 5,
-          // Note: Cursor calculation would be implemented
+          after: expect.any(String), // Should include cursor for page 2
         })
       );
     });

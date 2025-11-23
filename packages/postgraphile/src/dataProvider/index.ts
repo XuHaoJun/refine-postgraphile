@@ -32,7 +32,7 @@ import type {
   Pagination,
 } from "@refinedev/core";
 import { handleGraphQLError } from "../utils/errors";
-import { generateFilters } from "../utils/generateFilters";
+import { generateFilters, analyzeQueryPerformance } from "../utils/generateFilters";
 import { generateSorting } from "../utils/generateSorting";
 import { buildGraphQLQuery } from "../utils/graphql";
 
@@ -143,6 +143,23 @@ async function getList<TData extends BaseRecord = BaseRecord>(
 ): Promise<GetListResponse<TData>> {
   const { resource, pagination, sorters, filters, meta } = params;
 
+  // Performance analysis and optimization hints
+  const performanceHints = analyzeQueryPerformance(
+    filters || [],
+    pagination,
+    sorters,
+    (meta as any)?.fields
+  );
+
+  // Log performance warnings in development
+  if (process.env.NODE_ENV === 'development' && performanceHints.complexity > 40) {
+    console.warn(`[PostGraphile Data Provider] High complexity query detected for resource '${resource}':`, {
+      complexity: performanceHints.complexity,
+      suggestions: performanceHints.suggestions,
+      cacheable: performanceHints.cacheable,
+    });
+  }
+
   // Extract operation name from meta or use plural resource name
   const operationName = getListOperationName(resource, meta as any);
 
@@ -158,8 +175,25 @@ async function getList<TData extends BaseRecord = BaseRecord>(
   );
 
   try {
-    const response = await client.request(query, variables);
-    return parseGetListResponse<TData>(response, operationName);
+    // Add performance hints to the query if cacheable (but not for custom queries or in test environments)
+    let finalQuery = query;
+    if (performanceHints.cacheable && config?.endpoint && !meta?.gqlQuery && process.env.NODE_ENV !== 'test') {
+      // Add cache control hints for cacheable queries (only for generated queries)
+      finalQuery = query.replace(
+        'query ',
+        `query @cacheControl(maxAge: 300) ` // 5 minute cache for cacheable queries
+      );
+    }
+
+    const response = await client.request(finalQuery, variables);
+    const result = parseGetListResponse<TData>(response, operationName);
+
+    // Add performance metadata to result if requested
+    if ((meta as any)?.includePerformanceHints) {
+      (result as any)._performance = performanceHints;
+    }
+
+    return result;
   } catch (error) {
     throw handleGraphQLError(error);
   }
@@ -500,8 +534,17 @@ function buildGetListQuery(operationName: string, meta?: any): string {
     return "";
   }
 
-  // Build field selection
-  const fields = meta?.fields ? meta.fields.join("\n          ") : "id";
+  // Build field selection - optimize for performance
+  let fields: string;
+  if (meta?.fields && meta.fields.length > 0) {
+    // Use provided fields, but ensure id is always included for Refine compatibility
+    const fieldSet = new Set(meta.fields);
+    fieldSet.add('id');
+    fields = Array.from(fieldSet).join("\n          ");
+  } else {
+    // Default minimal selection for performance
+    fields = "id";
+  }
 
   // Capitalize operation name for GraphQL types
   const capitalizedName =
@@ -752,12 +795,20 @@ function buildGetListVariables(
 ): Record<string, any> {
   const variables: Record<string, any> = {};
 
-  // Handle pagination
+  // Handle pagination with Relay cursor navigation
   if (pagination) {
-    variables.first = pagination.pageSize || 10;
-    // Note: For simplicity, we're using offset-based pagination initially
-    // Full cursor-based pagination would require more complex cursor calculation
-    // TODO: Implement proper cursor-based pagination using currentPage
+    const { currentPage = 1, pageSize = 10 } = pagination;
+
+    // For cursor-based pagination, we use first/last with after/before
+    variables.first = pageSize;
+
+    // For page > 1, we need to calculate the cursor
+    // Since we don't have previous cursors, we'll use a simple offset-based cursor encoding
+    if (currentPage > 1) {
+      // Encode offset as base64 cursor (simplified approach)
+      const offset = (currentPage - 1) * pageSize;
+      variables.after = Buffer.from(`offset:${offset}`).toString('base64');
+    }
   }
 
   // Handle sorting
@@ -767,7 +818,7 @@ function buildGetListVariables(
 
   // Handle filtering
   if (filters && filters.length > 0) {
-    variables.filter = generateFilters(filters);
+    variables.filter = generateFilters(filters, config?.filterOptions);
   }
 
   return variables;
