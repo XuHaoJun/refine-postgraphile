@@ -1,6 +1,6 @@
 {
   "name": "@xuhaojun/refine-postgraphile",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": false,
   "description": "PostGraphile data provider for Refine framework with advanced filtering, real-time subscriptions, and full TypeScript support.",
   "keywords": [
@@ -39,14 +39,15 @@
   "typings": "dist/index.d.ts",
   "files": [
     "dist",
-    "src"
+    "src",
+    "README.md"
   ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run __tests__",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run build && npm run test",
+    "prepublishOnly": "cp ../../README.md ./README.md && npm run build && npm run test",
     "publint": "publint --strict=true --level=suggestion"
   },
   "dependencies": {
