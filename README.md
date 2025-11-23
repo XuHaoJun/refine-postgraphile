@@ -4,7 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/@xuhaojun/refine-postgraphile.svg)](https://www.npmjs.com/package/@xuhaojun/refine-postgraphile)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A [Refine](https://refine.dev/) data provider for [PostGraphile](https://www.graphile.org/postgraphile/) that enables seamless integration with PostGraphile-generated GraphQL APIs.
+A [Refine](https://refine.dev/) data provider for [PostGraphile V5](https://www.graphile.org/postgraphile/) that enables seamless integration with PostGraphile-generated GraphQL APIs.
 
 ## Features
 
@@ -70,7 +70,9 @@ function App() {
   return (
     <Refine
       dataProvider={dataProvider(client)}
-      liveProvider={liveProvider(client, { wsUrl: "wss://your-api.com/graphql" })}
+      liveProvider={liveProvider(client, {
+        wsUrl: "wss://your-api.com/graphql",
+      })}
       resources={[
         {
           name: "users",
@@ -103,7 +105,7 @@ Creates a PostGraphile data provider for Refine.
 function dataProvider(
   client: GraphQLClient,
   config?: PostGraphileDataProviderConfig
-): PostGraphileDataProvider
+): PostGraphileDataProvider;
 ```
 
 #### Parameters
@@ -115,15 +117,15 @@ function dataProvider(
 
 ```typescript
 interface PostGraphileDataProviderConfig {
-  endpoint: string;                    // GraphQL API endpoint URL
-  headers?: Record<string, string>;    // HTTP headers
+  endpoint: string; // GraphQL API endpoint URL
+  headers?: Record<string, string>; // HTTP headers
   namingConvention?: "simplified" | "default"; // Field naming convention
-  filterOptions?: FilterOptions;       // Connection filter options
-  schemaIntrospection?: boolean;       // Enable schema introspection
-  timeout?: number;                    // Request timeout in milliseconds
+  filterOptions?: FilterOptions; // Connection filter options
+  schemaIntrospection?: boolean; // Enable schema introspection
+  timeout?: number; // Request timeout in milliseconds
   retry?: {
-    attempts?: number;                 // Maximum retry attempts
-    delay?: number;                    // Delay between retries
+    attempts?: number; // Maximum retry attempts
+    delay?: number; // Delay between retries
   };
 }
 ```
@@ -136,7 +138,7 @@ Creates a live provider for real-time subscriptions.
 function liveProvider(
   client: GraphQLClient,
   config?: PostGraphileLiveProviderConfig
-): LiveProvider
+): LiveProvider;
 ```
 
 #### Parameters
@@ -148,16 +150,16 @@ function liveProvider(
 
 ```typescript
 interface PostGraphileLiveProviderConfig {
-  wsUrl?: string;                     // WebSocket URL for subscriptions
-  headers?: Record<string, string>;   // WebSocket connection headers
-  connectionTimeout?: number;         // Connection timeout
+  wsUrl?: string; // WebSocket URL for subscriptions
+  headers?: Record<string, string>; // WebSocket connection headers
+  connectionTimeout?: number; // Connection timeout
   reconnection?: {
-    enabled?: boolean;               // Enable auto-reconnection
-    initialDelay?: number;           // Initial reconnection delay
-    maxDelay?: number;              // Maximum reconnection delay
-    backoffMultiplier?: number;     // Delay multiplier
+    enabled?: boolean; // Enable auto-reconnection
+    initialDelay?: number; // Initial reconnection delay
+    maxDelay?: number; // Maximum reconnection delay
+    backoffMultiplier?: number; // Delay multiplier
   };
-  debug?: boolean;                   // Enable debug logging
+  debug?: boolean; // Enable debug logging
 }
 ```
 
@@ -286,6 +288,7 @@ import { dataProvider } from "@xuhaojun/refine-postgraphile";
 ```
 
 Key differences:
+
 - Uses Relay connections instead of direct list queries
 - Different mutation patterns (input/payload vs direct field updates)
 - Connection-based filtering syntax
