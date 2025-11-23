@@ -74,6 +74,12 @@ export function generateFilters(filters: CrudFilter[], options?: FilterOptions):
 }
 
 function generateFieldFilter(operator: string, value: any, options?: FilterOptions): any {
+  // Skip text operators with empty string values (they match everything)
+  const textOperators = ["contains", "ncontains", "containss", "ncontainss", "startswith", "nstartswith", "endswith", "nendswith"];
+  if (textOperators.includes(operator) && (value === "" || value === null || value === undefined)) {
+    return null;
+  }
+
   switch (operator) {
     case "eq":
       return { equalTo: value };
