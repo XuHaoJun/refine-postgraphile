@@ -414,10 +414,14 @@ export type Post = Node & {
 export type PostCondition = {
   /** Checks for equality with the object’s `categoryId` field. */
   categoryId?: InputMaybe<Scalars["UUID"]["input"]>;
+  /** Checks for equality with the object’s `content` field. */
+  content?: InputMaybe<Scalars["String"]["input"]>;
   /** Checks for equality with the object’s `createdAt` field. */
   createdAt?: InputMaybe<Scalars["Datetime"]["input"]>;
   /** Checks for equality with the object’s `rowId` field. */
   rowId?: InputMaybe<Scalars["UUID"]["input"]>;
+  /** Checks for equality with the object’s `title` field. */
+  title?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 /** A connection to a list of `Post` values. */
@@ -450,6 +454,8 @@ export type PostFilter = {
   categoryExists?: InputMaybe<Scalars["Boolean"]["input"]>;
   /** Filter by the object’s `categoryId` field. */
   categoryId?: InputMaybe<UuidFilter>;
+  /** Filter by the object’s `content` field. */
+  content?: InputMaybe<StringFilter>;
   /** Filter by the object’s `createdAt` field. */
   createdAt?: InputMaybe<DatetimeFilter>;
   /** Negates the expression. */
@@ -458,6 +464,8 @@ export type PostFilter = {
   or?: InputMaybe<Array<PostFilter>>;
   /** Filter by the object’s `rowId` field. */
   rowId?: InputMaybe<UuidFilter>;
+  /** Filter by the object’s `title` field. */
+  title?: InputMaybe<StringFilter>;
 };
 
 /** An input for mutations affecting `Post` */
@@ -473,13 +481,17 @@ export type PostInput = {
 export type PostOrderBy =
   | "CATEGORY_ID_ASC"
   | "CATEGORY_ID_DESC"
+  | "CONTENT_ASC"
+  | "CONTENT_DESC"
   | "CREATED_AT_ASC"
   | "CREATED_AT_DESC"
   | "NATURAL"
   | "PRIMARY_KEY_ASC"
   | "PRIMARY_KEY_DESC"
   | "ROW_ID_ASC"
-  | "ROW_ID_DESC";
+  | "ROW_ID_DESC"
+  | "TITLE_ASC"
+  | "TITLE_DESC";
 
 /** Represents an update to a `Post`. Fields that are set will be updated. */
 export type PostPatch = {
@@ -562,6 +574,84 @@ export type QueryPostsArgs = {
   last?: InputMaybe<Scalars["Int"]["input"]>;
   offset?: InputMaybe<Scalars["Int"]["input"]>;
   orderBy?: InputMaybe<Array<PostOrderBy>>;
+};
+
+/** A filter to be used against String fields. All fields are combined with a logical ‘and.’ */
+export type StringFilter = {
+  /** Not equal to the specified value, treating null like an ordinary value. */
+  distinctFrom?: InputMaybe<Scalars["String"]["input"]>;
+  /** Not equal to the specified value, treating null like an ordinary value (case-insensitive). */
+  distinctFromInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Ends with the specified string (case-sensitive). */
+  endsWith?: InputMaybe<Scalars["String"]["input"]>;
+  /** Ends with the specified string (case-insensitive). */
+  endsWithInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Equal to the specified value. */
+  equalTo?: InputMaybe<Scalars["String"]["input"]>;
+  /** Equal to the specified value (case-insensitive). */
+  equalToInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Greater than the specified value. */
+  greaterThan?: InputMaybe<Scalars["String"]["input"]>;
+  /** Greater than the specified value (case-insensitive). */
+  greaterThanInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Greater than or equal to the specified value. */
+  greaterThanOrEqualTo?: InputMaybe<Scalars["String"]["input"]>;
+  /** Greater than or equal to the specified value (case-insensitive). */
+  greaterThanOrEqualToInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Included in the specified list. */
+  in?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  /** Included in the specified list (case-insensitive). */
+  inInsensitive?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  /** Contains the specified string (case-sensitive). */
+  includes?: InputMaybe<Scalars["String"]["input"]>;
+  /** Contains the specified string (case-insensitive). */
+  includesInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Is null (if `true` is specified) or is not null (if `false` is specified). */
+  isNull?: InputMaybe<Scalars["Boolean"]["input"]>;
+  /** Less than the specified value. */
+  lessThan?: InputMaybe<Scalars["String"]["input"]>;
+  /** Less than the specified value (case-insensitive). */
+  lessThanInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Less than or equal to the specified value. */
+  lessThanOrEqualTo?: InputMaybe<Scalars["String"]["input"]>;
+  /** Less than or equal to the specified value (case-insensitive). */
+  lessThanOrEqualToInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Matches the specified pattern (case-sensitive). An underscore (_) matches any single character; a percent sign (%) matches any sequence of zero or more characters. */
+  like?: InputMaybe<Scalars["String"]["input"]>;
+  /** Matches the specified pattern (case-insensitive). An underscore (_) matches any single character; a percent sign (%) matches any sequence of zero or more characters. */
+  likeInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Equal to the specified value, treating null like an ordinary value. */
+  notDistinctFrom?: InputMaybe<Scalars["String"]["input"]>;
+  /** Equal to the specified value, treating null like an ordinary value (case-insensitive). */
+  notDistinctFromInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Does not end with the specified string (case-sensitive). */
+  notEndsWith?: InputMaybe<Scalars["String"]["input"]>;
+  /** Does not end with the specified string (case-insensitive). */
+  notEndsWithInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Not equal to the specified value. */
+  notEqualTo?: InputMaybe<Scalars["String"]["input"]>;
+  /** Not equal to the specified value (case-insensitive). */
+  notEqualToInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Not included in the specified list. */
+  notIn?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  /** Not included in the specified list (case-insensitive). */
+  notInInsensitive?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  /** Does not contain the specified string (case-sensitive). */
+  notIncludes?: InputMaybe<Scalars["String"]["input"]>;
+  /** Does not contain the specified string (case-insensitive). */
+  notIncludesInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Does not match the specified pattern (case-sensitive). An underscore (_) matches any single character; a percent sign (%) matches any sequence of zero or more characters. */
+  notLike?: InputMaybe<Scalars["String"]["input"]>;
+  /** Does not match the specified pattern (case-insensitive). An underscore (_) matches any single character; a percent sign (%) matches any sequence of zero or more characters. */
+  notLikeInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Does not start with the specified string (case-sensitive). */
+  notStartsWith?: InputMaybe<Scalars["String"]["input"]>;
+  /** Does not start with the specified string (case-insensitive). */
+  notStartsWithInsensitive?: InputMaybe<Scalars["String"]["input"]>;
+  /** Starts with the specified string (case-sensitive). */
+  startsWith?: InputMaybe<Scalars["String"]["input"]>;
+  /** Starts with the specified string (case-insensitive). */
+  startsWithInsensitive?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 /** A filter to be used against UUID fields. All fields are combined with a logical ‘and.’ */

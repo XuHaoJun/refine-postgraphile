@@ -40,6 +40,9 @@ INSERT INTO posts (id, title, content, category_id) VALUES
     ('660e8400-e29b-41d4-a716-446655440010', 'Virtual Reality in Education', 'VR technology is creating immersive learning experiences that enhance understanding and retention of complex subjects.', '550e8400-e29b-41d4-a716-446655440004'),
     ('660e8400-e29b-41d4-a716-446655440011', 'Electric Vehicle Market', 'The EV market is experiencing rapid growth, with major automakers committing to all-electric lineups in the coming years.', '550e8400-e29b-41d4-a716-446655440002');
 
+CREATE INDEX idx_posts_title ON posts(title);
+CREATE INDEX idx_posts_content ON posts(content);
+
 -- Create indexes for better performance
 CREATE INDEX idx_posts_category_id ON posts(category_id);
 CREATE INDEX idx_posts_created_at ON posts(created_at);
