@@ -568,7 +568,12 @@ function buildGetListQuery(
     fields = "id";
   }
 
-  // Capitalize operation name for GraphQL types
+  // Singularize operation name for GraphQL type names (PostGraphile uses singular types)
+  const singularName = singularize(operationName);
+  const capitalizedSingularName =
+    singularName.charAt(0).toUpperCase() + singularName.slice(1);
+
+  // Capitalize operation name for field names (keep plural for field names)
   const capitalizedName =
     operationName.charAt(0).toUpperCase() + operationName.slice(1);
 
@@ -611,12 +616,12 @@ function buildGetListQuery(
 
   return buildGraphQLQuery(
     "query",
-    `Get${capitalizedName}List`,
+    `Get${capitalizedSingularName}List`,
     [
       "$first: Int",
-      "$after: String",
-      `$filter: ${capitalizedName}Filter`,
-      `$orderBy: [${capitalizedName}OrderBy!]`,
+      "$after: Cursor",
+      `$filter: ${capitalizedSingularName}Filter`,
+      `$orderBy: [${capitalizedSingularName}OrderBy!]`,
     ],
     selection.trim()
   );
