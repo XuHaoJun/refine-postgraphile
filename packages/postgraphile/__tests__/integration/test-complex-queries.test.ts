@@ -12,9 +12,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
   beforeEach(() => {
     vi.clearAllMocks();
     mockClient = new GraphQLClient("https://api.example.com/graphql");
-    provider = dataProvider(mockClient, {
-      endpoint: "https://api.example.com/graphql",
-    });
+    provider = dataProvider(mockClient);
   });
 
   describe("Complex Filtering and Sorting Scenarios", () => {
@@ -82,7 +80,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
           filter: {
             status: { equalTo: "published" },
             views: { greaterThanOrEqualTo: 1000 },
-            title: { contains: "React" },
+            title: { includes: "React" },
             "author.name": { startsWith: "J" },
           },
         })
@@ -125,8 +123,16 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
               {
                 operator: "or" as const,
                 value: [
-                  { field: "category", operator: "eq" as const, value: "electronics" },
-                  { field: "tags", operator: "contains" as const, value: "premium" },
+                  {
+                    field: "category",
+                    operator: "eq" as const,
+                    value: "electronics",
+                  },
+                  {
+                    field: "tags",
+                    operator: "contains" as const,
+                    value: "premium",
+                  },
                 ],
               },
             ],
@@ -149,7 +155,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
               {
                 or: [
                   { category: { equalTo: "electronics" } },
-                  { tags: { contains: "premium" } },
+                  { tags: { includes: "premium" } },
                 ],
               },
             ],
@@ -185,7 +191,11 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
         resource: "users",
         filters: [
           { field: "roles", operator: "contains" as const, value: "admin" },
-          { field: "skills", operator: "in" as const, value: ["javascript", "typescript"] },
+          {
+            field: "skills",
+            operator: "in" as const,
+            value: ["javascript", "typescript"],
+          },
         ],
       };
 
@@ -197,7 +207,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
         expect.stringContaining("users"),
         expect.objectContaining({
           filter: {
-            roles: { contains: "admin" },
+            roles: { includes: "admin" },
             skills: { in: ["javascript", "typescript"] },
           },
         })
@@ -212,7 +222,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
               id: "1",
               orderDate: "2024-01-15T10:00:00Z",
               status: "completed",
-              totalAmount: 150.50,
+              totalAmount: 150.5,
               customer: { vipStatus: true },
             },
           ],
@@ -232,9 +242,21 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
         resource: "orders",
         sorters: [{ field: "orderDate", order: "desc" as const }],
         filters: [
-          { field: "orderDate", operator: "gte" as const, value: "2024-01-01T00:00:00Z" },
-          { field: "orderDate", operator: "lte" as const, value: "2024-01-31T23:59:59Z" },
-          { field: "status", operator: "in" as const, value: ["completed", "processing"] },
+          {
+            field: "orderDate",
+            operator: "gte" as const,
+            value: "2024-01-01T00:00:00Z",
+          },
+          {
+            field: "orderDate",
+            operator: "lte" as const,
+            value: "2024-01-31T23:59:59Z",
+          },
+          {
+            field: "status",
+            operator: "in" as const,
+            value: ["completed", "processing"],
+          },
           { field: "totalAmount", operator: "gt" as const, value: 100 },
           { field: "customer.vipStatus", operator: "eq" as const, value: true },
         ],
@@ -327,7 +349,11 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       const params = {
         resource: "events",
         filters: [
-          { field: "startDate", operator: "lt" as const, value: "2024-01-01T00:00:00Z" },
+          {
+            field: "startDate",
+            operator: "lt" as const,
+            value: "2024-01-01T00:00:00Z",
+          },
           { field: "status", operator: "eq" as const, value: "cancelled" },
         ],
       };
@@ -397,8 +423,8 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
 
       // Verify cursor is base64 encoded offset
       const callArgs = (mockClient.request as any).mock.calls[0][1];
-      const decodedCursor = Buffer.from(callArgs.after, 'base64').toString();
-      expect(decodedCursor).toBe('offset:20'); // (page 3 - 1) * 10 = 20
+      const decodedCursor = Buffer.from(callArgs.after, "base64").toString();
+      expect(decodedCursor).toBe("offset:20"); // (page 3 - 1) * 10 = 20
     });
 
     it("should handle PostgreSQL advanced types filtering", async () => {
@@ -409,7 +435,10 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
               id: "1",
               name: "Advanced Widget",
               tags: ["electronics", "smart"],
-              metadata: { category: "premium", features: ["wifi", "bluetooth"] },
+              metadata: {
+                category: "premium",
+                features: ["wifi", "bluetooth"],
+              },
               settings: { theme: "dark", notifications: true },
             },
           ],
@@ -428,11 +457,30 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       const params = {
         resource: "products",
         filters: [
-          { field: "tags", operator: "containedBy" as any, value: ["electronics", "smart", "premium"] },
-          { field: "tags", operator: "overlaps" as any, value: ["smart", "wifi"] },
-          { field: "metadata", operator: "contains" as const, value: { category: "premium" } },
+          {
+            field: "tags",
+            operator: "containedBy" as any,
+            value: ["electronics", "smart", "premium"],
+          },
+          {
+            field: "tags",
+            operator: "overlaps" as any,
+            value: ["smart", "wifi"],
+          },
+          {
+            field: "metadata",
+            operator: "contains" as const,
+            value: { category: "premium" },
+          },
           { field: "settings", operator: "hasKey" as any, value: "theme" },
-          { field: "metadata", operator: "containedBy" as any, value: { category: "premium", features: ["wifi", "bluetooth", "5g"] } },
+          {
+            field: "metadata",
+            operator: "containedBy" as any,
+            value: {
+              category: "premium",
+              features: ["wifi", "bluetooth", "5g"],
+            },
+          },
         ],
       };
 
@@ -450,7 +498,10 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
             },
             metadata: {
               contains: { category: "premium" },
-              containedBy: { category: "premium", features: ["wifi", "bluetooth", "5g"] },
+              containedBy: {
+                category: "premium",
+                features: ["wifi", "bluetooth", "5g"],
+              },
             },
             settings: { hasKey: "theme" },
           },

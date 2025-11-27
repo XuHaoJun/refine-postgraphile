@@ -12,7 +12,7 @@ export interface PerformanceHints {
   /** Whether query should be cached */
   cacheable: boolean;
   /** Estimated result size */
-  estimatedSize: 'small' | 'medium' | 'large';
+  estimatedSize: "small" | "medium" | "large";
 }
 
 /**
@@ -22,7 +22,10 @@ export interface PerformanceHints {
  * @param options - Filter validation and security options
  * @returns PostGraphile filter input object
  */
-export function generateFilters(filters: CrudFilter[], options?: FilterOptions): FilterInput {
+export function generateFilters(
+  filters: CrudFilter[],
+  options?: FilterOptions
+): FilterInput {
   if (!filters || filters.length === 0) {
     return {};
   }
@@ -35,7 +38,7 @@ export function generateFilters(filters: CrudFilter[], options?: FilterOptions):
 
   const filterInput: FilterInput = {};
 
-  filters.forEach(filter => {
+  filters.forEach((filter) => {
     // Handle LogicalFilter (field-based filters)
     if ("field" in filter && "operator" in filter) {
       const { field, operator, value } = filter;
@@ -61,9 +64,9 @@ export function generateFilters(filters: CrudFilter[], options?: FilterOptions):
       const { operator, value } = filter;
       if ((operator === "and" || operator === "or") && Array.isArray(value)) {
         if (operator === "and") {
-          filterInput.and = value.map(f => generateFilters([f], options));
+          filterInput.and = value.map((f) => generateFilters([f], options));
         } else if (operator === "or") {
-          filterInput.or = value.map(f => generateFilters([f], options));
+          filterInput.or = value.map((f) => generateFilters([f], options));
         }
       }
       // Note: "not" operator would be handled differently in ConditionalFilter
@@ -73,10 +76,26 @@ export function generateFilters(filters: CrudFilter[], options?: FilterOptions):
   return filterInput;
 }
 
-function generateFieldFilter(operator: string, value: any, options?: FilterOptions): any {
+function generateFieldFilter(
+  operator: string,
+  value: any,
+  options?: FilterOptions
+): any {
   // Skip text operators with empty string values (they match everything)
-  const textOperators = ["contains", "ncontains", "containss", "ncontainss", "startswith", "nstartswith", "endswith", "nendswith"];
-  if (textOperators.includes(operator) && (value === "" || value === null || value === undefined)) {
+  const textOperators = [
+    "contains",
+    "ncontains",
+    "containss",
+    "ncontainss",
+    "startswith",
+    "nstartswith",
+    "endswith",
+    "nendswith",
+  ];
+  if (
+    textOperators.includes(operator) &&
+    (value === "" || value === null || value === undefined)
+  ) {
     return null;
   }
 
@@ -98,13 +117,30 @@ function generateFieldFilter(operator: string, value: any, options?: FilterOptio
     case "nin":
       return { notIn: value };
     case "contains":
-      return { contains: value };
+      // For string values, use 'includes' (case-sensitive string substring)
+      // For object/array values, use 'contains' (JSONB/Array/HStore containment)
+      if (typeof value === "string") {
+        return { includes: value };
+      } else {
+        // Object or array - use PostGraphile's contains for JSONB/Array/HStore
+        return { contains: value };
+      }
     case "ncontains":
-      return { notContains: value };
+      // For string values, use 'notIncludes' (case-sensitive)
+      // For object/array values, use 'notContains' (JSONB/Array/HStore)
+      if (typeof value === "string") {
+        return { notIncludes: value };
+      } else {
+        return { notContains: value };
+      }
     case "containss":
-      return { contains: value };
+      // For string fields, use 'includesInsensitive' (case-insensitive)
+      // containss is always for strings (case-insensitive variant)
+      return { includesInsensitive: value };
     case "ncontainss":
-      return { notContains: value };
+      // For string fields, use 'notIncludesInsensitive' (case-insensitive)
+      // ncontainss is always for strings (case-insensitive variant)
+      return { notIncludesInsensitive: value };
     case "null":
       return { isNull: value };
     case "nnull":
@@ -135,7 +171,7 @@ function generateFieldFilter(operator: string, value: any, options?: FilterOptio
  * Performs basic security validation that always runs
  */
 function validateFiltersBasic(filters: CrudFilter[]): void {
-  filters.forEach(filter => {
+  filters.forEach((filter) => {
     if ("field" in filter) {
       validateFieldName(filter.field);
     }
@@ -146,7 +182,7 @@ function validateFiltersBasic(filters: CrudFilter[]): void {
 
     // Recursively validate nested filters
     if ("value" in filter && Array.isArray(filter.value)) {
-      filter.value.forEach(nestedFilter => {
+      filter.value.forEach((nestedFilter) => {
         if (typeof nestedFilter === "object" && nestedFilter !== null) {
           validateFiltersBasic([nestedFilter as CrudFilter]);
         }
@@ -163,12 +199,14 @@ function validateFilters(filters: CrudFilter[], options?: FilterOptions): void {
 
   const { allowedOperators, allowNullInput, allowEmptyObjectInput } = options;
 
-  filters.forEach(filter => {
+  filters.forEach((filter) => {
     if ("operator" in filter) {
       // Check if operator is allowed
       if (allowedOperators && !allowedOperators.includes(filter.operator)) {
         throw new Error(
-          `Filter operator '${filter.operator}' is not allowed. Allowed operators: ${allowedOperators.join(", ")}`
+          `Filter operator '${
+            filter.operator
+          }' is not allowed. Allowed operators: ${allowedOperators.join(", ")}`
         );
       }
 
@@ -178,7 +216,12 @@ function validateFilters(filters: CrudFilter[], options?: FilterOptions): void {
       }
 
       // Validate empty object restrictions
-      if (!allowEmptyObjectInput && typeof filter.value === "object" && filter.value !== null && Object.keys(filter.value).length === 0) {
+      if (
+        !allowEmptyObjectInput &&
+        typeof filter.value === "object" &&
+        filter.value !== null &&
+        Object.keys(filter.value).length === 0
+      ) {
         throw new Error("Empty objects are not allowed in filter inputs");
       }
 
@@ -188,7 +231,7 @@ function validateFilters(filters: CrudFilter[], options?: FilterOptions): void {
 
     // Recursively validate nested filters
     if ("value" in filter && Array.isArray(filter.value)) {
-      filter.value.forEach(nestedFilter => {
+      filter.value.forEach((nestedFilter) => {
         if (typeof nestedFilter === "object" && nestedFilter !== null) {
           validateFilters([nestedFilter as CrudFilter], options);
         }
@@ -208,7 +251,9 @@ function validateFieldName(field: string): void {
 
   // Prevent field names that could be used for GraphQL injection
   if (field.includes("__") || field.startsWith("_")) {
-    throw new Error(`Field name '${field}' is not allowed (reserved GraphQL introspection fields)`);
+    throw new Error(
+      `Field name '${field}' is not allowed (reserved GraphQL introspection fields)`
+    );
   }
 
   // Prevent field names with suspicious characters
@@ -233,14 +278,18 @@ function validateOperatorValue(operator: string, value: any): void {
 
   // Prevent extremely long string values
   if (typeof value === "string" && value.length > 10000) {
-    throw new Error("String filter values are too long (maximum 10000 characters)");
+    throw new Error(
+      "String filter values are too long (maximum 10000 characters)"
+    );
   }
 
   // Prevent deeply nested objects that could cause issues
   if (typeof value === "object" && value !== null && !Array.isArray(value)) {
     const depth = getObjectDepth(value);
     if (depth > 10) {
-      throw new Error("Filter object values are too deeply nested (maximum depth 10)");
+      throw new Error(
+        "Filter object values are too deeply nested (maximum depth 10)"
+      );
     }
   }
 }
@@ -276,12 +325,15 @@ export function analyzeQueryPerformance(
   let complexity = 0;
   const suggestions: string[] = [];
   let cacheable = true;
-  let estimatedSize: 'small' | 'medium' | 'large' = 'small';
+  let estimatedSize: "small" | "medium" | "large" = "small";
 
   // Analyze filter complexity
   const filterCount = filters.length;
-  const logicalOperators = filters.filter(f => 'operator' in f && ['and', 'or'].includes(f.operator)).length;
-  const nestedDepth = filterCount > 0 ? Math.max(...filters.map(f => getFilterDepth(f))) : 0;
+  const logicalOperators = filters.filter(
+    (f) => "operator" in f && ["and", "or"].includes(f.operator)
+  ).length;
+  const nestedDepth =
+    filterCount > 0 ? Math.max(...filters.map((f) => getFilterDepth(f))) : 0;
 
   complexity += filterCount * 3; // Base complexity per filter
   complexity += logicalOperators * 8; // Logical operators are more expensive
@@ -291,7 +343,7 @@ export function analyzeQueryPerformance(
   const pageSize = pagination?.pageSize || 10;
   if (pageSize > 100) {
     complexity += 15;
-    suggestions.push('Consider reducing page size for better performance');
+    suggestions.push("Consider reducing page size for better performance");
   } else if (pageSize > 50) {
     complexity += 8;
   }
@@ -304,31 +356,40 @@ export function analyzeQueryPerformance(
   const fieldCount = fields?.length || 1;
   if (fieldCount > 20) {
     complexity += 8;
-    suggestions.push('Selecting many fields may impact performance');
+    suggestions.push("Selecting many fields may impact performance");
   }
 
   // Determine cacheability
-  const hasDynamicFilters = filters.some(f =>
-    'operator' in f && ['contains', 'startswith', 'endswith'].includes(f.operator)
+  const hasDynamicFilters = filters.some(
+    (f) =>
+      "operator" in f &&
+      ["contains", "containss", "startswith", "endswith"].includes(f.operator)
   );
   if (hasDynamicFilters) {
     cacheable = false;
-    suggestions.push('Dynamic text filters prevent query caching');
+    suggestions.push("Dynamic text filters prevent query caching");
   }
 
   // Estimate result size
   if (filterCount === 0 && pageSize >= 100) {
-    estimatedSize = 'large';
-  } else if ((filterCount === 0 && pageSize >= 50) || (filterCount <= 2 && pageSize >= 25)) {
-    estimatedSize = 'medium';
+    estimatedSize = "large";
+  } else if (
+    (filterCount === 0 && pageSize >= 50) ||
+    (filterCount <= 2 && pageSize >= 25)
+  ) {
+    estimatedSize = "medium";
   }
 
   // Performance suggestions based on complexity
   if (complexity > 50) {
-    suggestions.unshift('High complexity query detected - consider adding database indexes');
+    suggestions.unshift(
+      "High complexity query detected - consider adding database indexes"
+    );
   }
   if (complexity > 30) {
-    suggestions.push('Consider using more specific filters to reduce result set');
+    suggestions.push(
+      "Consider using more specific filters to reduce result set"
+    );
   }
 
   // Cap complexity at 100
@@ -346,11 +407,18 @@ export function analyzeQueryPerformance(
  * Gets the maximum nesting depth of a filter
  */
 function getFilterDepth(filter: CrudFilter): number {
-  if (!('value' in filter) || !Array.isArray(filter.value)) {
+  if (!("value" in filter) || !Array.isArray(filter.value)) {
     return 0;
   }
 
-  return 1 + Math.max(...filter.value.map(f =>
-    typeof f === 'object' && f !== null ? getFilterDepth(f as CrudFilter) : 0
-  ));
+  return (
+    1 +
+    Math.max(
+      ...filter.value.map((f) =>
+        typeof f === "object" && f !== null
+          ? getFilterDepth(f as CrudFilter)
+          : 0
+      )
+    )
+  );
 }

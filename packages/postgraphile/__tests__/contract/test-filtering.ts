@@ -125,7 +125,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
         expect.objectContaining({
           filter: {
             category: { in: ["tech", "news"] },
-            tags: { contains: "javascript" },
+            tags: { includes: "javascript" },
           },
         })
       );
@@ -289,7 +289,7 @@ describe("PostGraphile Data Provider - Advanced Filtering Contract Tests", () =>
         expect.stringContaining("allPosts"),
         expect.objectContaining({
           filter: {
-            "author.name": { contains: "John" },
+            "author.name": { includes: "John" },
           },
         })
       );

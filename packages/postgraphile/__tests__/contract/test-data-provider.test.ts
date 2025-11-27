@@ -189,7 +189,7 @@ describe("PostGraphile Data Provider - Contract Tests", () => {
         expect.stringContaining("users"),
         expect.objectContaining({
           filter: {
-            name: { contains: "John" },
+            name: { includes: "John" },
           },
         })
       );

@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { generateFilters, analyzeQueryPerformance } from "../../src/utils/generateFilters.ts";
+import {
+  generateFilters,
+  analyzeQueryPerformance,
+} from "../../src/utils/generateFilters.ts";
 import type { FilterOptions } from "../../src/interfaces.ts";
 import type { CrudFilter } from "@refinedev/core";
 
@@ -67,8 +70,8 @@ describe("generateFilters Utility - Unit Tests", () => {
 
       expect(result).toEqual({
         title: {
-          contains: "React",
-          notContains: "Draft",
+          includes: "React",
+          notIncludes: "Draft",
         },
         name: {
           startsWith: "Mr",
@@ -109,8 +112,8 @@ describe("generateFilters Utility - Unit Tests", () => {
 
       expect(result).toEqual({
         tags: {
-          contains: "urgent",
-          notContains: "draft",
+          includesInsensitive: "urgent",
+          notIncludesInsensitive: "draft",
         },
       });
     });
@@ -143,10 +146,7 @@ describe("generateFilters Utility - Unit Tests", () => {
       const result = generateFilters(filters);
 
       expect(result).toEqual({
-        and: [
-          { status: { equalTo: "active" } },
-          { age: { greaterThan: 18 } },
-        ],
+        and: [{ status: { equalTo: "active" } }, { age: { greaterThan: 18 } }],
       });
     });
 
@@ -236,7 +236,7 @@ describe("generateFilters Utility - Unit Tests", () => {
 
       expect(result).toEqual({
         name: {
-          contains: "John",
+          includes: "John",
           startsWith: "J",
           endsWith: "n",
         },
@@ -291,8 +291,16 @@ describe("generateFilters Utility - Unit Tests", () => {
       const filters: CrudFilter[] = [
         { field: "tags", operator: "in", value: ["react", "vue", "angular"] },
         { field: "categories", operator: "contains", value: ["tech", "web"] },
-        { field: "userTags", operator: "containedBy" as any, value: ["premium", "vip"] },
-        { field: "sharedTags", operator: "overlaps" as any, value: ["featured", "trending"] },
+        {
+          field: "userTags",
+          operator: "containedBy" as any,
+          value: ["premium", "vip"],
+        },
+        {
+          field: "sharedTags",
+          operator: "overlaps" as any,
+          value: ["featured", "trending"],
+        },
       ];
 
       const result = generateFilters(filters);
@@ -307,9 +315,17 @@ describe("generateFilters Utility - Unit Tests", () => {
 
     it("should handle PostgreSQL JSONB operators", () => {
       const filters: CrudFilter[] = [
-        { field: "metadata", operator: "contains", value: { category: "electronics" } },
+        {
+          field: "metadata",
+          operator: "contains",
+          value: { category: "electronics" },
+        },
         { field: "settings", operator: "hasKey" as any, value: "theme" },
-        { field: "config", operator: "containedBy" as any, value: { enabled: true, features: ["basic"] } },
+        {
+          field: "config",
+          operator: "containedBy" as any,
+          value: { enabled: true, features: ["basic"] },
+        },
       ];
 
       const result = generateFilters(filters);
@@ -413,7 +429,7 @@ describe("generateFilters Utility - Unit Tests", () => {
 
     it("should reject field names with invalid characters", () => {
       const filters: CrudFilter[] = [
-        { field: 'name<script>', operator: "eq", value: "test" },
+        { field: "name<script>", operator: "eq", value: "test" },
       ];
 
       expect(() => generateFilters(filters)).toThrow(
@@ -467,18 +483,18 @@ describe("generateFilters Utility - Unit Tests", () => {
                         i: {
                           j: {
                             k: {
-                              l: "deep"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+                              l: "deep",
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       };
       const filters: CrudFilter[] = [
         { field: "metadata", operator: "contains", value: deeplyNested },
@@ -495,9 +511,7 @@ describe("generateFilters Utility - Unit Tests", () => {
       const filters: CrudFilter[] = [
         {
           operator: "and",
-          value: [
-            { field: "__typename", operator: "eq", value: "User" },
-          ],
+          value: [{ field: "__typename", operator: "eq", value: "User" }],
         },
       ];
 
@@ -509,17 +523,24 @@ describe("generateFilters Utility - Unit Tests", () => {
 
   describe("Performance Analysis", () => {
     it("should analyze simple query performance", () => {
-      const filters: CrudFilter[] = [{ field: "name", operator: "eq", value: "test" }];
+      const filters: CrudFilter[] = [
+        { field: "name", operator: "eq", value: "test" },
+      ];
       const pagination = { pageSize: 10 };
       const sorters = [{ field: "name", order: "asc" }];
       const fields = ["id", "name"];
 
-      const result = analyzeQueryPerformance(filters, pagination, sorters, fields);
+      const result = analyzeQueryPerformance(
+        filters,
+        pagination,
+        sorters,
+        fields
+      );
 
       expect(result.complexity).toBeGreaterThan(0);
       expect(result.complexity).toBeLessThanOrEqual(10);
       expect(result.cacheable).toBe(true);
-      expect(result.estimatedSize).toBe('small');
+      expect(result.estimatedSize).toBe("small");
       expect(result.suggestions).toHaveLength(0);
     });
 
@@ -532,7 +553,11 @@ describe("generateFilters Utility - Unit Tests", () => {
           operator: "and",
           value: [
             { field: "status", operator: "eq", value: "active" },
-            { field: "category", operator: "in", value: ["a", "b", "c", "d", "e"] },
+            {
+              field: "category",
+              operator: "in",
+              value: ["a", "b", "c", "d", "e"],
+            },
           ],
         },
       ];
@@ -547,8 +572,12 @@ describe("generateFilters Utility - Unit Tests", () => {
 
       expect(result.complexity).toBeGreaterThan(30);
       expect(result.cacheable).toBe(false); // Contains dynamic text filters
-      expect(result.suggestions).toContain('Consider using more specific filters to reduce result set');
-      expect(result.suggestions).toContain('Dynamic text filters prevent query caching');
+      expect(result.suggestions).toContain(
+        "Consider using more specific filters to reduce result set"
+      );
+      expect(result.suggestions).toContain(
+        "Dynamic text filters prevent query caching"
+      );
     });
 
     it("should suggest optimizations for large page sizes", () => {
@@ -557,16 +586,27 @@ describe("generateFilters Utility - Unit Tests", () => {
 
       const result = analyzeQueryPerformance(filters, pagination);
 
-      expect(result.suggestions).toContain('Consider reducing page size for better performance');
+      expect(result.suggestions).toContain(
+        "Consider reducing page size for better performance"
+      );
     });
 
     it("should suggest optimizations for many selected fields", () => {
-      const filters: CrudFilter[] = [{ field: "name", operator: "eq", value: "test" }];
+      const filters: CrudFilter[] = [
+        { field: "name", operator: "eq", value: "test" },
+      ];
       const fields = Array.from({ length: 25 }, (_, i) => `field${i}`);
 
-      const result = analyzeQueryPerformance(filters, undefined, undefined, fields);
+      const result = analyzeQueryPerformance(
+        filters,
+        undefined,
+        undefined,
+        fields
+      );
 
-      expect(result.suggestions).toContain('Selecting many fields may impact performance');
+      expect(result.suggestions).toContain(
+        "Selecting many fields may impact performance"
+      );
     });
 
     it("should estimate result sizes correctly", () => {
@@ -575,21 +615,19 @@ describe("generateFilters Utility - Unit Tests", () => {
         [{ field: "id", operator: "eq", value: "123" }] as CrudFilter[],
         { pageSize: 10 }
       );
-      expect(smallResult.estimatedSize).toBe('small');
+      expect(smallResult.estimatedSize).toBe("small");
 
       // Medium result
-      const mediumResult = analyzeQueryPerformance(
-        [] as CrudFilter[],
-        { pageSize: 50 }
-      );
-      expect(mediumResult.estimatedSize).toBe('medium');
+      const mediumResult = analyzeQueryPerformance([] as CrudFilter[], {
+        pageSize: 50,
+      });
+      expect(mediumResult.estimatedSize).toBe("medium");
 
       // Large result
-      const largeResult = analyzeQueryPerformance(
-        [] as CrudFilter[],
-        { pageSize: 100 }
-      );
-      expect(largeResult.estimatedSize).toBe('large');
+      const largeResult = analyzeQueryPerformance([] as CrudFilter[], {
+        pageSize: 100,
+      });
+      expect(largeResult.estimatedSize).toBe("large");
     });
 
     it("should handle empty inputs", () => {
@@ -597,7 +635,7 @@ describe("generateFilters Utility - Unit Tests", () => {
 
       expect(result.complexity).toBe(0);
       expect(result.cacheable).toBe(true);
-      expect(result.estimatedSize).toBe('small');
+      expect(result.estimatedSize).toBe("small");
       expect(result.suggestions).toHaveLength(0);
     });
   });
