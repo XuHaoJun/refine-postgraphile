@@ -81,7 +81,7 @@ export type GetPostQueryVariables = Types.Exact<{
 
 export type GetPostQuery = {
   postById?: Types.Maybe<
-    Pick<Types.Post, "id" | "title" | "content"> & {
+    Pick<Types.Post, "id" | "title" | "content" | "categoryId"> & {
       category?: Types.Maybe<Pick<Types.Category, "id" | "title">>;
     }
   >;
@@ -140,7 +140,7 @@ export type GetPostCategoriesSelectQuery = {
     Pick<Types.CategoryConnection, "totalCount"> & {
       edges: Array<
         Types.Maybe<{
-          node?: Types.Maybe<Pick<Types.Category, "id" | "title">>;
+          node?: Types.Maybe<Pick<Types.Category, "id" | "rowId" | "title">>;
         }>
       >;
     }

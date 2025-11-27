@@ -36,7 +36,8 @@ export const PostEdit = () => {
   const postData = queryResult?.data?.data;
   const { selectProps: categorySelectProps } = useSelect<Category>({
     resource: "categories",
-    defaultValue: postData?.category?.id,
+    defaultValue: postData?.categoryId,
+    optionValue: "rowId",
 
     meta: {
       gqlQuery: POST_CATEGORIES_SELECT_QUERY,

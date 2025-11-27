@@ -43,6 +43,7 @@ export const POST_QUERY = gql`
             id
             title
             content
+            categoryId
             category {
                 id
                 title
@@ -107,6 +108,7 @@ export const POST_CATEGORIES_SELECT_QUERY = gql`
             edges {
                 node {
                     id
+                    rowId
                     title
                 }
             }
