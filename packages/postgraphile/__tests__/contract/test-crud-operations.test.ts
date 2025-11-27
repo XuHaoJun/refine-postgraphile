@@ -18,9 +18,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
     mockClient = new GraphQLClient("https://api.example.com/graphql");
 
     // Create data provider
-    provider = dataProvider(mockClient, {
-      endpoint: "https://api.example.com/graphql",
-    });
+    provider = dataProvider(mockClient);
   });
 
   describe("create Method Contract", () => {
@@ -86,7 +84,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
         expect.stringContaining("mutation Createpost"),
         expect.objectContaining({
           input: {
-            object: {
+            post: {
               title: "New Post",
               content: "Post content",
               authorId: "1",
@@ -107,14 +105,17 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
         },
       };
 
-      await expect(provider.create(params)).rejects.toThrow("GraphQL mutation failed");
+      await expect(provider.create(params)).rejects.toThrow(
+        "GraphQL mutation failed"
+      );
     });
   });
 
   describe("createMany Method Contract", () => {
     it("should create multiple records and return created data array", async () => {
       // Mock multiple calls to create
-      mockClient.request = vi.fn()
+      mockClient.request = vi
+        .fn()
         .mockResolvedValueOnce({
           createuser: {
             data: {
@@ -230,7 +231,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
         expect.objectContaining({
           input: {
             id: "1",
-            object: {
+            patch: {
               email: "john.updated@example.com",
             },
           },
@@ -257,7 +258,8 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
   describe("updateMany Method Contract", () => {
     it("should update multiple records and return updated data array", async () => {
       // Mock multiple calls to update
-      mockClient.request = vi.fn()
+      mockClient.request = vi
+        .fn()
         .mockResolvedValueOnce({
           updateUserById: {
             data: {
@@ -301,9 +303,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
         variables: {
           status: "inactive",
         },
-        filters: [
-          { field: "status", operator: "eq", value: "active" },
-        ],
+        filters: [{ field: "status", operator: "eq", value: "active" }],
       };
 
       await expect(provider.updateMany!(params)).rejects.toThrow(
@@ -379,14 +379,17 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
         id: "999",
       };
 
-      await expect(provider.deleteOne(params)).rejects.toThrow("Record not found or cannot be deleted");
+      await expect(provider.deleteOne(params)).rejects.toThrow(
+        "Record not found or cannot be deleted"
+      );
     });
   });
 
   describe("deleteMany Method Contract", () => {
     it("should delete multiple records and return deleted data array", async () => {
       // Mock multiple calls to deleteOne
-      mockClient.request = vi.fn()
+      mockClient.request = vi
+        .fn()
         .mockResolvedValueOnce({
           deleteUserById: {
             data: {
@@ -422,9 +425,7 @@ describe("PostGraphile Data Provider - CRUD Operations Contract Tests", () => {
       const params = {
         resource: "users",
         ids: [],
-        filters: [
-          { field: "status", operator: "eq", value: "inactive" },
-        ],
+        filters: [{ field: "status", operator: "eq", value: "inactive" }],
       };
 
       await expect(provider.deleteMany!(params)).rejects.toThrow(
