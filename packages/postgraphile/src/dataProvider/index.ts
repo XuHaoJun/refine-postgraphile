@@ -34,7 +34,7 @@ import type {
 import { handleGraphQLError } from "../utils/errors";
 import { generateFilters, analyzeQueryPerformance } from "../utils/generateFilters";
 import { generateSorting } from "../utils/generateSorting";
-import { buildGraphQLQuery } from "../utils/graphql";
+import { buildGraphQLQuery, convertKeysToCamelCase } from "../utils/graphql";
 
 /**
  * Creates a PostGraphile data provider for Refine
@@ -277,8 +277,11 @@ async function create<TData extends BaseRecord = BaseRecord, TVariables = {}>(
     config
   );
 
-  // Build variables
-  const mutationVariables = { input: { object: variables } };
+  // Build variables - PostGraphile expects the field name to be the singular, lowercase resource name
+  // Also convert snake_case field names to camelCase (e.g., category_id -> categoryId)
+  const fieldName = operationName.toLowerCase();
+  const convertedVariables = convertKeysToCamelCase(variables);
+  const mutationVariables = { input: { [fieldName]: convertedVariables } };
 
   try {
     const response = await client.request(mutation, mutationVariables);
@@ -333,8 +336,11 @@ async function update<TData extends BaseRecord = BaseRecord, TVariables = {}>(
   );
 
   // Build variables - exclude id from object since it's passed separately
+  // PostGraphile expects the field name to be "patch" for update mutations
+  // Also convert snake_case field names to camelCase (e.g., category_id -> categoryId)
   const { id: _, ...updateVariables } = variables as any;
-  const mutationVariables = { input: { id, object: updateVariables } };
+  const convertedVariables = convertKeysToCamelCase(updateVariables);
+  const mutationVariables = { input: { id, patch: convertedVariables } };
 
   try {
     const response = await client.request(mutation, mutationVariables);

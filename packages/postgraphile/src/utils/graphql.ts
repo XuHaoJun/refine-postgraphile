@@ -320,3 +320,44 @@ export function buildVariableDefinition(
   const defaultPart = defaultValue ? ` = ${defaultValue}` : "";
   return `$${name}: ${type}${defaultPart}`;
 }
+
+/**
+ * Converts snake_case to camelCase
+ * 
+ * @param str - String in snake_case
+ * @returns String in camelCase
+ */
+export function snakeToCamel(str: string): string {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+/**
+ * Recursively converts object keys from snake_case to camelCase
+ * This is needed because PostGraphile uses camelCase in GraphQL schema,
+ * but Refine forms often use snake_case field names
+ * 
+ * @param obj - Object with potentially snake_case keys
+ * @returns Object with camelCase keys
+ */
+export function convertKeysToCamelCase(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(convertKeysToCamelCase);
+  }
+
+  if (typeof obj === "object" && obj.constructor === Object) {
+    const converted: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const camelKey = snakeToCamel(key);
+        converted[camelKey] = convertKeysToCamelCase(obj[key]);
+      }
+    }
+    return converted;
+  }
+
+  return obj;
+}
