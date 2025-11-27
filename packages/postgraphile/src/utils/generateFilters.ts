@@ -73,7 +73,24 @@ export function generateFilters(
     }
   });
 
-  return filterInput;
+  // Clean up empty nested objects (e.g., {title: {}} should be removed)
+  const cleanedFilterInput: FilterInput = {};
+  for (const [key, value] of Object.entries(filterInput)) {
+    if (key === "and" || key === "or") {
+      // Keep and/or arrays, but filter out empty objects
+      const filtered = (value as any[]).filter(
+        (item) => item && typeof item === "object" && Object.keys(item).length > 0
+      );
+      if (filtered.length > 0) {
+        (cleanedFilterInput as any)[key] = filtered;
+      }
+    } else if (value && typeof value === "object" && Object.keys(value).length > 0) {
+      // Only include non-empty objects
+      (cleanedFilterInput as any)[key] = value;
+    }
+  }
+
+  return cleanedFilterInput;
 }
 
 function generateFieldFilter(
@@ -99,6 +116,12 @@ function generateFieldFilter(
     return null;
   }
 
+  // Skip array-based operators with empty arrays
+  const arrayOperators = ["in", "nin", "containedBy", "overlaps"];
+  if (arrayOperators.includes(operator) && Array.isArray(value) && value.length === 0) {
+    return null;
+  }
+
   switch (operator) {
     case "eq":
       return { equalTo: value };
@@ -121,6 +144,9 @@ function generateFieldFilter(
       // For object/array values, use 'contains' (JSONB/Array/HStore containment)
       if (typeof value === "string") {
         return { includes: value };
+      } else if (Array.isArray(value) && value.length === 0) {
+        // Skip empty arrays - PostGraphile doesn't accept empty arrays for contains
+        return null;
       } else {
         // Object or array - use PostGraphile's contains for JSONB/Array/HStore
         return { contains: value };
@@ -130,6 +156,9 @@ function generateFieldFilter(
       // For object/array values, use 'notContains' (JSONB/Array/HStore)
       if (typeof value === "string") {
         return { notIncludes: value };
+      } else if (Array.isArray(value) && value.length === 0) {
+        // Skip empty arrays - PostGraphile doesn't accept empty arrays for notContains
+        return null;
       } else {
         return { notContains: value };
       }
