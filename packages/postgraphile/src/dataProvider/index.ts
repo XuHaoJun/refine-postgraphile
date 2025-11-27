@@ -984,10 +984,13 @@ function parseCreateResponse<TData extends BaseRecord = BaseRecord>(
     throw new Error(`Expected '${fieldName}' field in response`);
   }
 
-  // Handle both .data (standard) and .post (simplified) formats
-  const data = result.data || result.post;
+  // Handle .data (standard), .post (for posts), and singularized resource name (e.g., .category)
+  const singularName = operationName.toLowerCase();
+  const data = result.data || result.post || result[singularName];
   if (!data) {
-    throw new Error(`Expected '${fieldName}.data' or '${fieldName}.post' field in response`);
+    throw new Error(
+      `Expected '${fieldName}.data', '${fieldName}.post', or '${fieldName}.${singularName}' field in response`
+    );
   }
 
   return { data: data as TData };
@@ -1010,10 +1013,13 @@ function parseUpdateResponse<TData extends BaseRecord = BaseRecord>(
     throw new Error(`Expected '${fieldName}' field in response`);
   }
 
-  // Handle both .data (standard) and .post (simplified) formats
-  const data = result.data || result.post;
+  // Handle .data (standard), .post (for posts), and singularized resource name (e.g., .category)
+  const singularName = operationName.toLowerCase();
+  const data = result.data || result.post || result[singularName];
   if (!data) {
-    throw new Error(`Expected '${fieldName}.data' or '${fieldName}.post' field in response`);
+    throw new Error(
+      `Expected '${fieldName}.data', '${fieldName}.post', or '${fieldName}.${singularName}' field in response`
+    );
   }
 
   return { data: data as TData };
@@ -1036,10 +1042,13 @@ function parseDeleteResponse<TData extends BaseRecord = BaseRecord>(
     throw new Error(`Expected '${fieldName}' field in response`);
   }
 
-  // Handle both .data (standard) and .post (simplified) formats
-  const data = result.data || result.post;
+  // Handle .data (standard), .post (for posts), and singularized resource name (e.g., .category)
+  const singularName = operationName.toLowerCase();
+  const data = result.data || result.post || result[singularName];
   if (!data) {
-    throw new Error(`Expected '${fieldName}.data' or '${fieldName}.post' field in response`);
+    throw new Error(
+      `Expected '${fieldName}.data', '${fieldName}.post', or '${fieldName}.${singularName}' field in response`
+    );
   }
 
   return { data: data as TData };
