@@ -4,10 +4,16 @@ import { PgSimplifyInflectionPreset } from "@graphile/simplify-inflection";
 import { PostGraphileConnectionFilterPreset } from "postgraphile-plugin-connection-filter";
 
 const preset: GraphileConfig.Preset = {
-  extends: [PostGraphileAmberPreset, PgSimplifyInflectionPreset, PostGraphileConnectionFilterPreset],
+  extends: [
+    PostGraphileAmberPreset,
+    PgSimplifyInflectionPreset,
+    PostGraphileConnectionFilterPreset,
+  ],
   pgServices: [
     makePgService({
-      connectionString: process.env.DATABASE_URL || "postgres://postgres:test@localhost:5433/postgraphile_example",
+      connectionString:
+        process.env.DATABASE_URL ||
+        "postgres://postgres:test@localhost:5433/postgraphile_example",
       schemas: ["public"],
       pubsub: true,
     }),
