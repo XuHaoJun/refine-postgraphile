@@ -364,7 +364,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       expect(result.total).toBe(0);
     });
 
-    it("should handle cursor-based pagination correctly", async () => {
+    it("should handle pagination correctly (offset-based when no cursor)", async () => {
       const mockResponse = {
         posts: {
           nodes: [
@@ -405,7 +405,7 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
       // Reset mock for second call
       (mockClient.request as any).mockClear();
 
-      // Test page 3 (should have cursor)
+      // Test page 3 (should use offset-based pagination when no cursor in meta)
       const params3 = {
         resource: "posts",
         pagination: { currentPage: 3, pageSize: 10 },
@@ -417,14 +417,14 @@ describe("PostGraphile Data Provider - Complex Queries Integration Tests", () =>
         expect.stringContaining("posts"),
         expect.objectContaining({
           first: 10,
-          after: expect.any(String), // Should have base64 encoded cursor
+          offset: 20, // (page 3 - 1) * 10 = 20
         })
       );
 
-      // Verify cursor is base64 encoded offset
+      // Verify no 'after' parameter when using offset
       const callArgs = (mockClient.request as any).mock.calls[0][1];
-      const decodedCursor = Buffer.from(callArgs.after, "base64").toString();
-      expect(decodedCursor).toBe("offset:20"); // (page 3 - 1) * 10 = 20
+      expect(callArgs.after).toBeUndefined();
+      expect(callArgs.offset).toBe(20);
     });
 
     it("should handle PostgreSQL advanced types filtering", async () => {
