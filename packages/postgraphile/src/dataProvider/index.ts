@@ -167,16 +167,17 @@ async function getList<TData extends BaseRecord = BaseRecord>(
   // Extract operation name from meta or use plural resource name
   const operationName = getListOperationName(resource, meta as any);
 
-  // Build GraphQL query for Relay connection
-  const query = buildGetListQuery(operationName, meta, config);
-
-  // Build variables for the query
+  // Build variables for the query first (we need to know what pagination method is used)
   const variables = buildGetListVariables(
     pagination,
     sorters,
     filters as any,
-    config
+    config,
+    meta as any
   );
+
+  // Build GraphQL query for Relay connection (pass variables to conditionally include args)
+  const query = buildGetListQuery(operationName, meta, config, variables);
 
   try {
     // Add performance hints to the query if cacheable (but not for custom queries or in test environments)
@@ -547,19 +548,45 @@ function pluralize(word: string): string {
 function buildGetListQuery(
   operationName: string,
   meta?: any,
-  config?: PostGraphileDataProviderConfig
+  config?: PostGraphileDataProviderConfig,
+  variables?: Record<string, any>
 ): string {
   // Use custom query from meta if provided
   if (meta?.gqlQuery) {
-    // Handle DocumentNode - extract the query string
+    
+    // Extract query string from DocumentNode or use string directly
+    let queryString: string;
     if (typeof meta.gqlQuery === "object" && meta.gqlQuery.loc) {
-      return meta.gqlQuery.loc.source.body;
+      queryString = meta.gqlQuery.loc.source.body;
+    } else if (typeof meta.gqlQuery === "string") {
+      queryString = meta.gqlQuery;
+    } else {
+      return "";
     }
-    // Handle string queries
-    if (typeof meta.gqlQuery === "string") {
-      return meta.gqlQuery;
+    
+    // Check if we need to modify the query for offset-based pagination
+    const hasOffset = variables?.offset !== undefined && 
+                      variables.offset !== null && 
+                      typeof variables.offset === 'number' && 
+                      variables.offset >= 0;
+    const hasAfter = variables?.after !== undefined && 
+                      variables.after !== null && 
+                      typeof variables.after === 'string' && 
+                      variables.after.length > 0;
+    const hasBefore = variables?.before !== undefined && 
+                      variables.before !== null && 
+                      typeof variables.before === 'string' && 
+                      variables.before.length > 0;
+    
+    // If using offset, replace cursor arguments with offset
+    if (hasOffset && !hasAfter && !hasBefore) {
+      // Replace $after: Cursor with $offset: Int in variable definitions
+      queryString = queryString.replace(/\$after:\s*Cursor/g, '$offset: Int');
+      // Replace after: $after with offset: $offset in field arguments
+      queryString = queryString.replace(/after:\s*\$after/g, 'offset: $offset');
     }
-    return "";
+    
+    return queryString;
   }
 
   // Build field selection - optimize for performance
@@ -602,12 +629,62 @@ function buildGetListQuery(
         ${fields}
       }`;
 
+  // Conditionally include pagination arguments
+  // PostGraphile: offset and after/before are mutually exclusive
+  // Only include after if a cursor is provided, only include offset if no cursor
+  // Check variables object exists and has the properties we need
+  const offset = variables?.offset;
+  const after = variables?.after;
+  const before = variables?.before;
+  const last = variables?.last;
+  
+  // Explicitly check for offset first - if it exists, we MUST use it and NOT use cursors
+  const hasOffset = offset !== undefined && offset !== null && typeof offset === 'number' && offset >= 0;
+  const hasAfter = after !== undefined && after !== null && typeof after === 'string' && after.length > 0;
+  const hasBefore = before !== undefined && before !== null && typeof before === 'string' && before.length > 0;
+  const usesLast = last !== undefined && last !== null && typeof last === 'number';
+  
+  // CRITICAL: If offset is present, NEVER use cursors (they're mutually exclusive in PostGraphile)
+  // Only use cursors if we explicitly have them AND no offset
+  const shouldUseAfter = hasAfter && !hasOffset;
+  const shouldUseBefore = hasBefore && !hasOffset;
+
+  // Determine whether to use first or last
+  const fieldArgs: string[] = [];
+  const queryVars: string[] = [];
+  
+  if (usesLast) {
+    fieldArgs.push("last: $last");
+    queryVars.push("$last: Int");
+  } else {
+    fieldArgs.push("first: $first");
+    queryVars.push("$first: Int");
+  }
+
+  // Only include cursor args if we have a valid cursor AND no offset
+  if (shouldUseAfter) {
+    fieldArgs.push("after: $after");
+    queryVars.push("$after: Cursor");
+  } else if (shouldUseBefore) {
+    fieldArgs.push("before: $before");
+    queryVars.push("$before: Cursor");
+  }
+
+  // Only include offset if we don't have a cursor
+  if (hasOffset) {
+    fieldArgs.push("offset: $offset");
+    queryVars.push("$offset: Int");
+  }
+
+  // Always include filter and orderBy (they're optional in GraphQL)
+  fieldArgs.push("filter: $filter");
+  fieldArgs.push("orderBy: $orderBy");
+  queryVars.push(`$filter: ${capitalizedSingularName}Filter`);
+  queryVars.push(`$orderBy: [${capitalizedSingularName}OrderBy!]`);
+
   const selection = `
     ${fieldName}(
-      first: $first
-      after: $after
-      filter: $filter
-      orderBy: $orderBy
+      ${fieldArgs.join("\n      ")}
     ) {
       ${itemsSelection}
       totalCount
@@ -623,12 +700,7 @@ function buildGetListQuery(
   return buildGraphQLQuery(
     "query",
     `Get${capitalizedSingularName}List`,
-    [
-      "$first: Int",
-      "$after: Cursor",
-      `$filter: ${capitalizedSingularName}Filter`,
-      `$orderBy: [${capitalizedSingularName}OrderBy!]`,
-    ],
+    queryVars,
     selection.trim()
   );
 }
@@ -878,23 +950,45 @@ function buildGetListVariables(
   pagination?: Pagination,
   sorters?: CrudSort[],
   filters?: CrudFilter[],
-  config?: PostGraphileDataProviderConfig
+  config?: PostGraphileDataProviderConfig,
+  meta?: any
 ): Record<string, any> {
   const variables: Record<string, any> = {};
 
-  // Handle pagination with Relay cursor navigation
+  // Handle pagination with Relay cursor navigation or offset-based pagination
   if (pagination) {
     const { currentPage = 1, pageSize = 10 } = pagination;
 
     // For cursor-based pagination, we use first/last with after/before
+    // For offset-based pagination, we use first with offset
     variables.first = pageSize;
 
-    // For page > 1, we need to calculate the cursor
-    // Since we don't have previous cursors, we'll use a simple offset-based cursor encoding
-    if (currentPage > 1) {
-      // Encode offset as base64 cursor (simplified approach)
+    // Use cursor from meta if provided (from previous response)
+    // PostGraphile cursors are base64-encoded JSON arrays, not offset strings
+    // IMPORTANT: offset and after/before are mutually exclusive in PostGraphile
+    if (meta?.cursor?.next && typeof meta.cursor.next === 'string') {
+      // Use the cursor from the previous response (cursor-based pagination)
+      variables.after = meta.cursor.next;
+      // Explicitly don't set offset when using cursor
+    } else if (meta?.cursor?.prev && typeof meta.cursor.prev === 'string') {
+      // For backward pagination, use before with prev cursor
+      variables.before = meta.cursor.prev;
+      variables.last = pageSize;
+      delete variables.first;
+      // Explicitly don't set offset when using cursor
+    } else if (currentPage > 1) {
+      // For page-based pagination without cursor, use offset
+      // PostGraphile Amber preset supports offset as an alternative to cursor pagination
       const offset = (currentPage - 1) * pageSize;
-      variables.after = Buffer.from(`offset:${offset}`).toString('base64');
+      variables.offset = offset;
+      // Explicitly ensure after/before are not set when using offset
+      delete variables.after;
+      delete variables.before;
+    } else {
+      // For page 1, explicitly ensure no pagination args are set
+      delete variables.after;
+      delete variables.before;
+      delete variables.offset;
     }
   }
 
@@ -948,9 +1042,25 @@ function parseGetListResponse<TData extends BaseRecord = BaseRecord>(
     data = [];
   }
 
+  // Extract cursor information from pageInfo for cursor-based pagination
+  // PostGraphile cursors are base64-encoded JSON arrays like ["tableName","id"]
+  const pageInfo = connection.pageInfo;
+  const cursor: { next?: string; prev?: string } | undefined = pageInfo
+    ? (() => {
+        const next = pageInfo.endCursor || undefined;
+        const prev = pageInfo.startCursor || undefined;
+        // Only return cursor object if at least one cursor is available
+        if (next || prev) {
+          return { ...(next && { next }), ...(prev && { prev }) };
+        }
+        return undefined;
+      })()
+    : undefined;
+
   return {
     data,
     total: connection.totalCount || 0,
+    ...(cursor && { cursor }),
   };
 }
 
